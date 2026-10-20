@@ -307,6 +307,6 @@ Released under the [MIT License](LICENSE). See `LICENSE` for details.
 **QBiscuit** · Team ID `VTU-QFF-HC-0191` · Tier `Online`
 · Built with ⚛️ Qiskit for the VTU-QFF Hackathon
 
-[⬆ Back to Top](#QBiscuit)
+[⬆ Back to Top](#qbiscuit)
 
 </div>
