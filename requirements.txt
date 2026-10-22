@@ -19,3 +19,7 @@ scikit-learn>=1.4
 
 # Testing
 pytest>=8.0
+
+#APIs
+fastapi
+uvicorn
