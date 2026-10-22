@@ -41,14 +41,11 @@
 
 ## 👥 Team Members (GitHub IDs)
 
-> Members are added to this repository as **collaborators** and must accept the
-> GitHub invitation before they can push. Add your GitHub username below.
-
 | # | Name | GitHub Username | Role |
 | :-- | :--- | :--- | :--- |
-| 1 | _Add your name_ | _your-github-username_ | _Team Lead_ |
-| 2 | _Add your name_ | _your-github-username_ | _Developer_ |
-| 3 | _Add your name_ | _your-github-username_ | _Developer_ |
+| 1 | Shriya Nagarkar | tsukinousagi18 | _Team Lead_ |
+| 2 | Soham Pawar | SohamPawar246 | _Developer_ |
+| 3 | Nikhil Kumar | nikhil2027 | _Developer_ |
 
 <!--
 Optional: add a plain list instead of the table above.
@@ -268,12 +265,12 @@ git pull --rebase       # update your branch on top of main
 
 ## ✅ Submission Checklist
 
-- [ ] Repository created and **public**
-- [ ] All team members added as **collaborators** and invitations accepted
+- [x] Repository created and **public**
+- [x] All team members added as **collaborators** and invitations accepted
 - [ ] `README.md` updated with project details, problem statement and solution
-- [ ] Team members listed under [Team Members](#-team-members-github-ids)
+- [x] Team members listed under [Team Members](#-team-members-github-ids)
 - [ ] `requirements.txt` committed and project runs from a clean clone
-- [ ] Code pushed to `main` and the latest `main` builds successfully
+- [x] Code pushed to `main` and the latest `main` builds successfully
 - [ ] Notebooks committed with **cleared outputs** (or use `nbstrip`)
 - [ ] `README` includes a demo screenshot / video link
 - [ ] Short project summary submitted on the hackathon portal
