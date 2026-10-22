@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d39b3c1d9dd4fce40a514cfc395f258e, type: 3}
+  m_Name: Act1_Transmission
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueScript
+  channel: CH 04
+  lines:
+  - speaker: 2
+    text: Incoming transmission. Lunar relay, channel 04.
+  - speaker: 0
+    text: We're seeing inconsistent results from the experimental processor. The
+      latest control calculation failed its validation check.
+  - speaker: 1
+    text: Did the instrument itself fail?
+  - speaker: 0
+    text: We don't know yet. We need to investigate the computation before trusting
+      its output. Can you run the diagnostic circuit?
+  - speaker: 2
+    text: Diagnostic module offline. Research notebook available.

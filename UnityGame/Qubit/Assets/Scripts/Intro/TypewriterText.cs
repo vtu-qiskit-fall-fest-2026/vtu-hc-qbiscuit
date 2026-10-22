@@ -30,6 +30,14 @@ public class TypewriterText : MonoBehaviour
         StartCoroutine(TypeRoutine());
     }
 
+    /// <summary>Shows all text at once and ends typing.</summary>
+    public void MarkDone()
+    {
+        StopAllCoroutines();
+        text.maxVisibleCharacters = int.MaxValue;
+        IsTyping = false;
+    }
+
     IEnumerator TypeRoutine()
     {
         IsTyping = true;

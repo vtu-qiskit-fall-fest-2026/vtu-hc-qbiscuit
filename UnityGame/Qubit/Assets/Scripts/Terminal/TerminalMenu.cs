@@ -64,7 +64,7 @@ public class TerminalMenu : MonoBehaviour
         if (blip != null) blip.Play();
     }
 
-    void Refresh()
+    public void Refresh()
     {
         for (int i = 0; i < items.Count; i++) items[i].SetSelected(i == index);
         if (descriptionText != null && items.Count > 0) descriptionText.text = items[index].Description;

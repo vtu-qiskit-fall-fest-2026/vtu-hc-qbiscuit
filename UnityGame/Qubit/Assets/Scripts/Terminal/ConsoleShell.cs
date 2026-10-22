@@ -7,6 +7,7 @@ using UnityEngine.Events;
 /// <summary>
 /// The flat operations console shown once the diagnostic session starts:
 /// status bar, module list, main panel and key hints. Sections reveal one after another.
+/// Also tracks Act I progress: answer the transmission, review the notebook, bring diagnostics online.
 /// </summary>
 public class ConsoleShell : MonoBehaviour
 {
@@ -31,15 +32,94 @@ public class ConsoleShell : MonoBehaviour
     [SerializeField] string consoleKeys = "[UP/DOWN] MODULE    [ENTER] OPEN    [ESC] MAIN TERMINAL";
     [SerializeField] string notebookKeys = "[W/S] ENTRY  [A/D] SECTION  [PGUP/PGDN] SCROLL  [1-3] GUIDE  [P] PDF  [ESC] BACK";
 
+    [Header("Comms link")]
+    [SerializeField] CommsView comms;
+    [SerializeField] DialogueScript openingTransmission;
+    [SerializeField] GameObject[] hiddenDuringComms;
+    [SerializeField] string commsKeys = "[ENTER] CONTINUE / TRANSMIT    [ESC] LEAVE CHANNEL";
+
+    [Header("Diagnostic console")]
+    [SerializeField] DiagnosticsView diagnostics;
+    [SerializeField] GameObject[] hiddenDuringDiagnostics;
+    [SerializeField] string diagnosticsKeys = "[R] RUN   [1-3] PLACE X   [0] CLEAR   [V] VERIFY   [N] NOTEBOOK   [ESC] BACK";
+    [Tooltip("Notebook section opened from the diagnostic console (05 = reading the console).")]
+    [SerializeField] int notebookSectionFromDiagnostics = 4;
+
+    [Header("Act III: report and ending")]
+    [SerializeField] EndingView ending;
+    [SerializeField] GameObject[] hiddenDuringEnding;
+    [SerializeField] string endingKeys = "[ENTER] SKIP / CONTINUE";
+    [Tooltip("Raised after the ending, to return to the main terminal.")]
+    public UnityEvent onSessionComplete = new UnityEvent();
+
+    [Header("Modules")]
+    [SerializeField] TerminalMenuItem commsItem;
+    [SerializeField] TerminalMenuItem notebookItem;
+    [SerializeField] TerminalMenuItem diagnosticsItem;
+    [SerializeField] TerminalMenuItem reportItem;
+
+    [Header("Main panel cards")]
+    [SerializeField, TextArea(4, 12)] string objectiveCard =
+        "<color=#ffe2a8>02:18 UTC   CHANNEL CLOSED</color>\n\n" +
+        "OBJECTIVE ... REVIEW THE RESEARCH NOTEBOOK\n" +
+        "THEN ........ BRING THE DIAGNOSTIC MODULE ONLINE\n\n" +
+        "<color=#a8701f>Start with the CORE entries: the X gate, bit-flip errors and parity checks.</color>";
+    [SerializeField, TextArea(4, 12)] string diagnosticsCard =
+        "<color=#ffe2a8>DIAGNOSTIC MODULE ONLINE</color>\n\n" +
+        "CIRCUIT ..... 3 DATA QUBITS + 2 ANCILLAS\n" +
+        "BACKEND ..... QISKIT AER (LOCAL)\n" +
+        "TASK ........ FIND AND CORRECT THE BIT-FLIP ERROR\n\n" +
+        "<color=#a8701f>Select DIAGNOSTICS and press [ENTER].</color>";
+
+    [SerializeField, TextArea(4, 12)] string verifiedCard =
+        "<color=#3fe0b5>REPAIR VERIFIED</color>\n\n" +
+        "RESULT ...... ENCODED STATE RESTORED (000)\n" +
+        "REPORT ...... READY FOR TRANSMISSION\n\n" +
+        "<color=#a8701f>Select MISSION REPORT and press [ENTER] to transmit.</color>";
+
     [Tooltip("Raised when the player opens the COMMS LINK module.")]
     public UnityEvent onOpenComms;
+    [Tooltip("Raised when the player opens DIAGNOSTICS once it is online.")]
+    public UnityEvent onOpenDiagnostics;
+
+    const string Incoming = "<color=#3fe0b5>INCOMING</color>";
+    const string New = "<color=#3fe0b5>NEW</color>";
+    const string Online = "<color=#3fe0b5>ONLINE</color>";
+
+    const string Ready = "<color=#3fe0b5>READY</color>";
+    const string Verified = "<color=#3fe0b5>VERIFIED</color>";
 
     float sessionStart;
+    bool transmissionAnswered;
+    bool notebookReviewed;
+    bool repairVerified;
+    bool reportSent;
+    bool notebookFromDiagnostics;
+    DialogueScript reportDialogue;
+
+    public bool DiagnosticsOnline => notebookReviewed;
+
+    void Awake()
+    {
+        if (comms != null)
+        {
+            comms.clock = () => StationTime(false);
+            comms.onClose.AddListener(CloseComms);
+        }
+        if (diagnostics != null)
+        {
+            diagnostics.onClose.AddListener(CloseDiagnostics);
+            diagnostics.onVerified.AddListener(OnRepairVerified);
+            diagnostics.onOpenNotebook.AddListener(OpenNotebookFromDiagnostics);
+        }
+        if (ending != null) ending.onFinished.AddListener(FinishSession);
+    }
 
     void OnEnable()
     {
         sessionStart = Time.unscaledTime;
         if (statusLine != null) statusLine.text = "";
+        ApplyProgress();
         StartCoroutine(Reveal());
     }
 
@@ -67,17 +147,52 @@ public class ConsoleShell : MonoBehaviour
 
     void Update()
     {
-        if (clockText == null) return;
-        int seconds = Mathf.FloorToInt(Time.unscaledTime - sessionStart);
-        int total = startHour * 3600 + startMinute * 60 + seconds;
-        clockText.text = string.Format("{0:00}:{1:00}:{2:00} UTC", (total / 3600) % 24, (total / 60) % 60, total % 60);
+        if (clockText != null) clockText.text = StationTime(true) + " UTC";
     }
+
+    public string StationTime(bool seconds)
+    {
+        int elapsed = Mathf.FloorToInt(Time.unscaledTime - sessionStart);
+        int total = startHour * 3600 + startMinute * 60 + elapsed;
+        string hm = string.Format("{0:00}:{1:00}", (total / 3600) % 24, (total / 60) % 60);
+        return seconds ? hm + string.Format(":{0:00}", total % 60) : hm;
+    }
+
+    // ---- Comms link ----
 
     public void OpenComms()
     {
-        Status("OPENING CHANNEL TO LUNAR VESSEL ...");
         onOpenComms.Invoke();
+        if (comms == null) { Status("OPENING CHANNEL TO LUNAR VESSEL ..."); return; }
+
+        foreach (var g in hiddenDuringComms) g.SetActive(false);
+        modulesMenu.enabled = false;
+        if (keysText != null) keysText.text = commsKeys;
+        Status("CHANNEL OPEN: LUNAR RELAY");
+
+        if (transmissionAnswered) comms.ShowLog(openingTransmission);
+        else comms.Play(openingTransmission, OnTransmissionAnswered);
     }
+
+    void OnTransmissionAnswered()
+    {
+        transmissionAnswered = true;
+        CloseComms();
+        ApplyProgress();
+        ShowCard(objectiveCard);
+        Status("NOTEBOOK FLAGGED: REVIEW THE CORE ENTRIES.");
+    }
+
+    public void CloseComms()
+    {
+        comms.gameObject.SetActive(false);
+        foreach (var g in hiddenDuringComms) g.SetActive(true);
+        modulesMenu.enabled = true;
+        if (keysText != null) keysText.text = consoleKeys;
+        if (!transmissionAnswered) Status("CHANNEL LEFT OPEN. THE TRANSMISSION IS STILL WAITING.");
+    }
+
+    // ---- Research notebook ----
 
     public void OpenNotebook()
     {
@@ -87,17 +202,203 @@ public class ConsoleShell : MonoBehaviour
         notebook.Open();
     }
 
+    void OpenNotebookFromDiagnostics()
+    {
+        notebookFromDiagnostics = true;
+        diagnostics.gameObject.SetActive(false);
+        foreach (var g in hiddenWhileReading) g.SetActive(false);
+        if (keysText != null) keysText.text = notebookKeys;
+        notebook.Open(notebookSectionFromDiagnostics);
+    }
+
     public void CloseNotebook()
     {
         notebook.gameObject.SetActive(false);
         foreach (var g in hiddenWhileReading) g.SetActive(true);
+
+        if (notebookFromDiagnostics)
+        {
+            // Back to the circuit board the player came from.
+            notebookFromDiagnostics = false;
+            foreach (var g in hiddenDuringDiagnostics) g.SetActive(false);
+            if (keysText != null) keysText.text = diagnosticsKeys;
+            diagnostics.Open();
+            return;
+        }
+
         modulesMenu.enabled = true;
         if (keysText != null) keysText.text = consoleKeys;
-        Status("RESEARCH NOTEBOOK CLOSED.");
+
+        if (transmissionAnswered && !notebookReviewed)
+        {
+            notebookReviewed = true;
+            ApplyProgress();
+            ShowCard(diagnosticsCard);
+            Status("DIAGNOSTIC MODULE ONLINE.");
+        }
+        else Status("RESEARCH NOTEBOOK CLOSED.");
     }
 
-    public void DiagnosticsOffline() => Status("DIAGNOSTIC CONSOLE: MODULE OFFLINE.");
-    public void ReportLocked() => Status("MISSION REPORT: NO VERIFIED RESULT TO TRANSMIT.");
+    // ---- Diagnostics and report ----
+
+    public void OpenDiagnostics()
+    {
+        if (!notebookReviewed)
+        {
+            Status(transmissionAnswered ? "DIAGNOSTIC MODULE OFFLINE. REVIEW THE NOTEBOOK FIRST."
+                                        : "DIAGNOSTIC MODULE OFFLINE. ANSWER THE TRANSMISSION FIRST.");
+            return;
+        }
+        onOpenDiagnostics.Invoke();
+        if (diagnostics == null) { Status("DIAGNOSTIC CONSOLE: LOADING CIRCUIT INTERFACE ..."); return; }
+        foreach (var g in hiddenDuringDiagnostics) g.SetActive(false);
+        modulesMenu.enabled = false;
+        if (keysText != null) keysText.text = diagnosticsKeys;
+        diagnostics.Open();
+    }
+
+    public void CloseDiagnostics()
+    {
+        diagnostics.gameObject.SetActive(false);
+        foreach (var g in hiddenDuringDiagnostics) g.SetActive(true);
+        modulesMenu.enabled = true;
+        if (keysText != null) keysText.text = consoleKeys;
+        Status(repairVerified ? "REPAIR VERIFIED. REPORT READY TO SEND." : "CONSOLE CLOSED. FAULT STILL OPEN.");
+    }
+
+    void OnRepairVerified()
+    {
+        if (repairVerified) return;
+        repairVerified = true;
+        ApplyProgress();
+        ShowCard(verifiedCard);
+    }
+
+    // ---- Act III: mission report and ending ----
+
+    /// <summary>MISSION REPORT module: transmit the verified result, or explain why it's locked.</summary>
+    public void ReportLocked()
+    {
+        if (!repairVerified) { Status("NO VERIFIED RESULT TO TRANSMIT YET."); return; }
+        if (comms == null) return;
+
+        foreach (var g in hiddenDuringComms) g.SetActive(false);
+        modulesMenu.enabled = false;
+        if (keysText != null) keysText.text = commsKeys;
+
+        if (reportSent) { comms.ShowLog(reportDialogue); Status("REPORT ARCHIVE: LUNAR RELAY"); return; }
+        reportDialogue = BuildReport();
+        Status("TRANSMITTING MISSION REPORT ...");
+        comms.Play(reportDialogue, OnReportSent);
+    }
+
+    DialogueScript BuildReport()
+    {
+        string syn = diagnostics.Syndrome;
+        int fix = diagnostics.Correction;
+        string[] ordinal = { "first", "second", "third" };
+        string you = fix >= 0
+            ? $"The syndrome reads {syn}, which indicates a bit-flip error on the {ordinal[fix]} data qubit. I've applied the corresponding correction, and the verification run passed."
+            : $"The syndrome reads {syn}: no bit-flip detected, so no correction was needed. The verification run passed.";
+
+        var d = ScriptableObject.CreateInstance<DialogueScript>();
+        d.name = "Act3_Report";
+        d.channel = "CH 04";
+        d.lines = new List<DialogueScript.Line>
+        {
+            new DialogueScript.Line { speaker = DialogueScript.Speaker.System, text = $"Mission report compiled. Syndrome {syn}, correction {(fix >= 0 ? "X on q" + fix : "none")}, data 000, verified. Opening uplink." },
+            new DialogueScript.Line { speaker = DialogueScript.Speaker.You, text = you },
+            new DialogueScript.Line { speaker = DialogueScript.Speaker.MissionSpecialist, text = "Received. I'll compare the result with the instrument's next measurement." },
+            new DialogueScript.Line { speaker = DialogueScript.Speaker.System, text = "Diagnostic complete. Research report transmitted." },
+        };
+        return d;
+    }
+
+    void OnReportSent()
+    {
+        reportSent = true;
+        comms.gameObject.SetActive(false);
+        foreach (var g in hiddenDuringComms) g.SetActive(true);
+        ApplyProgress();
+        if (ending == null) { CloseComms(); return; }
+
+        foreach (var g in hiddenDuringEnding) g.SetActive(false);
+        if (keysText != null) keysText.text = endingKeys;
+        ending.Show(MissionLog());
+    }
+
+    string MissionLog()
+    {
+        int fix = diagnostics.Correction;
+        string syn = diagnostics.Syndrome;
+        string fault = fix >= 0 ? $"SINGLE BIT-FLIP ON q{fix}" : "NONE DETECTED";
+        string source = diagnostics.VerifiedBy;
+        return
+            $"<color=#ffe2a8>MISSION LOG  //  ANDROMEDA RESEARCH STATION</color>\n" +
+            $"<color=#a8701f>{StationTime(false)} UTC   SESSION 0217-A</color>\n\n" +
+            $"FAULT .......... {fault}\n" +
+            $"SYNDROME ....... {syn}\n" +
+            $"CORRECTION ..... {(fix >= 0 ? "X ON q" + fix : "NONE")}\n" +
+            $"VERIFICATION ... PASSED  (DATA 000, {source})\n\n" +
+            $"The control calculation can be trusted again.\n\n" +
+            $"<color=#3fe0b5>INCOMING  //  LUNAR RELAY</color>\n" +
+            $"\"The instrument's next measurement matches your result. One more thing: the latest lunar survey shows a signal we can't explain yet. Sending the data now.\"";
+    }
+
+    void FinishSession()
+    {
+        foreach (var g in hiddenDuringEnding) g.SetActive(true);
+        modulesMenu.enabled = true;
+        if (keysText != null) keysText.text = consoleKeys;
+        Status("SESSION 0217-A COMPLETE.");
+        onSessionComplete.Invoke();
+    }
+
+    // ---- Shared ----
+
+    void ApplyProgress()
+    {
+        if (commsItem != null)
+        {
+            commsItem.SetBadge(transmissionAnswered ? "" : Incoming);
+            commsItem.SetDescription(transmissionAnswered
+                ? "STATUS: CHANNEL IDLE\nRe-read the 02:17 transmission from the lunar vessel."
+                : "STATUS: INCOMING\nA transmission from the lunar vessel is waiting on the relay.");
+        }
+        if (notebookItem != null)
+        {
+            notebookItem.SetBadge(transmissionAnswered && !notebookReviewed ? New : "");
+            notebookItem.SetDescription(transmissionAnswered && !notebookReviewed
+                ? "STATUS: RECOMMENDED\nReview the CORE entries before running the diagnostic."
+                : "STATUS: AVAILABLE\nThe station's beginner guide, with hands-on benches and IBM Quantum docs.");
+        }
+        if (diagnosticsItem != null)
+        {
+            diagnosticsItem.SetBadge(repairVerified ? Verified : notebookReviewed ? Online : "");
+            diagnosticsItem.SetDescription(repairVerified
+                ? "STATUS: VERIFIED\nThe encoded state was restored and verified."
+                : notebookReviewed
+                ? "STATUS: ONLINE\nThe three-qubit diagnostic circuit, run on Qiskit Aer."
+                : "STATUS: OFFLINE\nComes online after you answer the transmission and review the notebook.");
+        }
+        if (reportItem != null)
+        {
+            reportItem.SetBadge(reportSent ? "<color=#3fe0b5>SENT</color>" : repairVerified ? Ready : "");
+            reportItem.SetDescription(reportSent
+                ? "STATUS: SENT\nRe-read the report transmitted to the lunar vessel."
+                : repairVerified
+                ? "STATUS: READY\nPress [ENTER] to transmit the verified result to the lunar vessel."
+                : "STATUS: LOCKED\nNeeds a verified result before anything can be transmitted.");
+        }
+        if (modulesMenu != null && modulesMenu.isActiveAndEnabled) modulesMenu.Refresh();
+    }
+
+    void ShowCard(string text)
+    {
+        if (mainPanelText == null) return;
+        mainPanelText.GetComponent<TMP_Text>().text = text;
+        mainPanelText.Play();
+    }
 
     void Status(string message)
     {

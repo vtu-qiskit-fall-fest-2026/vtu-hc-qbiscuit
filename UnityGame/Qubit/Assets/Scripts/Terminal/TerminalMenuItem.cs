@@ -23,9 +23,20 @@ public class TerminalMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerCli
     public UnityEvent onRight;
 
     TerminalMenu menu;
+    string badge;
+    bool selected;
 
     public bool IsOption => valueText != null;
     public string Description => description;
+
+    public void SetDescription(string text) => description = text;
+
+    /// <summary>Short status tag shown after the label, e.g. "INCOMING".</summary>
+    public void SetBadge(string text)
+    {
+        badge = text;
+        SetSelected(selected);
+    }
 
     public void Bind(TerminalMenu owner) => menu = owner;
 
@@ -36,7 +47,8 @@ public class TerminalMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerCli
 
     public void SetSelected(bool selected)
     {
-        labelText.text = (selected ? "> " : "  ") + label;
+        this.selected = selected;
+        labelText.text = (selected ? "> " : "  ") + label + (string.IsNullOrEmpty(badge) ? "" : "  " + badge);
         if (highlight != null) highlight.enabled = selected;
         Color c = selected ? selectedTextColor : normalColor;
         labelText.color = c;
