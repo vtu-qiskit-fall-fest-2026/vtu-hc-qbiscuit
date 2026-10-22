@@ -258,7 +258,13 @@ public class NotebookView : MonoBehaviour
             entryBody.text = hint + e.body;
             qiskitText.text = string.IsNullOrEmpty(e.qiskit) ? "" : FormatCode(e.qiskit);
         }
-        if (resetScroll && bodyScroll != null) bodyScroll.verticalNormalizedPosition = 1f;
+        if (resetScroll && bodyScroll != null)
+        {
+            // The body resizes to fit its new text; lay it out first so "top" means the real top.
+            LayoutRebuilder.ForceRebuildLayoutImmediate(bodyScroll.content);
+            bodyScroll.verticalNormalizedPosition = 1f;
+            bodyScroll.velocity = Vector2.zero;
+        }
 
         // Docs.
         var docs = new StringBuilder();
