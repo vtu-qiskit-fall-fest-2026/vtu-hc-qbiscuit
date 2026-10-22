@@ -294,7 +294,6 @@ public class DiagnosticsView : MonoBehaviour
         lampB.color = b ? teal : lampOff;
         syndromeText.text = syndrome == null ? $"<color={Hex(faint)}>SYNDROME --</color>" : $"SYNDROME <color={Hex(bright)}>{syndrome}</color>";
         dataText.text = finalData == null ? $"<color={Hex(faint)}>DATA OUT ---</color>" : $"DATA OUT <color={Hex(bright)}>{finalData}</color>";
-        backendText.text = backend.IsStandIn ? $"<color={Hex(alert)}>{backend.Label}</color>" : backend.Label;
 
         for (int i = 0; i < fixSlots.Length; i++)
         {

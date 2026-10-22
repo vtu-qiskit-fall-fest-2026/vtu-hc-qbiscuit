@@ -1,0 +1,5 @@
+# Andromeda quantum backend (use Python 3.12; Qiskit 1.x does not install on 3.13)
+qiskit>=1.0,<2.0
+qiskit-aer>=0.15
+fastapi>=0.110
+uvicorn>=0.29

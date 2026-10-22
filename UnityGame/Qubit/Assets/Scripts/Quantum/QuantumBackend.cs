@@ -8,6 +8,7 @@ using UnityEngine.Networking;
 [Serializable]
 public class QuantumRequest
 {
+    public int version = 1;            // backend API version
     public string action;              // "diagnose" or "correct"
     public int error_qubit = -1;       // 0, 1, 2, or -1 for no error
     public int correction_qubit = -1;  // 0, 1, 2, or -1 for no correction
@@ -24,6 +25,8 @@ public class QuantumResponse
     public int correction_qubit;
     public bool verified;
     public string message;
+    public string error;    // backend's reason when success is false
+    public string detail;   // FastAPI's reason on an HTTP error
     public int shots;
 
     [NonSerialized] public string source;
@@ -50,6 +53,72 @@ public class QuantumBackend : MonoBehaviour
 
     public string Label => UsesServer ? "QISKIT AER (REMOTE)" : allowOfflineStandIn ? StandInLabel : "NO BACKEND CONFIGURED";
 
+    // ---- Live connection status ----
+
+    public enum Status { StandIn, Connecting, Online, Unreachable }
+
+    [Header("Health check")]
+    [Tooltip("Seconds between /health checks once the server has answered.")]
+    [SerializeField] float healthInterval = 15f;
+    [Tooltip("Seconds between retries while the server is unreachable.")]
+    [SerializeField] float retryInterval = 8f;
+
+    /// <summary>Raised with (previous, current) whenever the connection status changes.</summary>
+    public event Action<Status, Status> StatusChanged;
+
+    public Status CurrentStatus { get; private set; } = Status.Connecting;
+
+    /// <summary>Short status text, e.g. "ONLINE", for labels such as "QISKIT AER: ONLINE".</summary>
+    public string StatusText => CurrentStatus switch
+    {
+        Status.StandIn => "OFFLINE STAND-IN",
+        Status.Online => "ONLINE",
+        Status.Unreachable => "UNREACHABLE",
+        _ => "CONNECTING..."
+    };
+
+    string HealthUrl
+    {
+        get
+        {
+            string url = serverUrl.Trim().TrimEnd('/');
+            if (url.EndsWith("/run")) url = url.Substring(0, url.Length - 4);
+            return url + "/health";
+        }
+    }
+
+    void Start()
+    {
+        // Checking at launch also wakes a sleeping free-tier server before the player needs it.
+        if (UsesServer) StartCoroutine(HealthLoop());
+        else SetStatus(allowOfflineStandIn ? Status.StandIn : Status.Unreachable);
+    }
+
+    IEnumerator HealthLoop()
+    {
+        SetStatus(Status.Connecting);
+        while (true)
+        {
+            // Allow a long first wait for a cold start, shorter ones afterwards.
+            int timeout = CurrentStatus == Status.Online ? 10 : timeoutSeconds;
+            using (var www = UnityWebRequest.Get(HealthUrl))
+            {
+                www.timeout = timeout;
+                yield return www.SendWebRequest();
+                SetStatus(www.result == UnityWebRequest.Result.Success ? Status.Online : Status.Unreachable);
+            }
+            yield return new WaitForSecondsRealtime(CurrentStatus == Status.Online ? healthInterval : retryInterval);
+        }
+    }
+
+    void SetStatus(Status next)
+    {
+        if (next == CurrentStatus) return;
+        var previous = CurrentStatus;
+        CurrentStatus = next;
+        StatusChanged?.Invoke(previous, next);
+    }
+
     public IEnumerator Send(QuantumRequest request, Action<QuantumResponse> done)
     {
         if (!UsesServer)
@@ -60,25 +129,48 @@ public class QuantumBackend : MonoBehaviour
             yield break;
         }
 
+        // The backend has one puzzle action, "correct", which measures the syndrome and verifies.
+        // A diagnosis is the same circuit with no correction; only its syndrome is used.
+        var wire = new QuantumRequest
+        {
+            version = request.version,
+            action = "correct",
+            error_qubit = request.error_qubit,
+            correction_qubit = request.action == "diagnose" ? -1 : request.correction_qubit
+        };
+
         using (var www = new UnityWebRequest(serverUrl, UnityWebRequest.kHttpVerbPOST))
         {
-            www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(request)));
+            www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(wire)));
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
             www.timeout = timeoutSeconds;
             yield return www.SendWebRequest();
 
-            if (www.result != UnityWebRequest.Result.Success)
+            string body = www.downloadHandler != null ? www.downloadHandler.text : "";
+            QuantumResponse response = null;
+            if (!string.IsNullOrEmpty(body))
             {
+                try { response = JsonUtility.FromJson<QuantumResponse>(body); }
+                catch (Exception) { response = null; }
+            }
+
+            if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.DataProcessingError)
+            {
+                SetStatus(Status.Unreachable);
                 done(Fail(request, $"Could not reach the Qiskit backend ({www.error})."));
                 yield break;
             }
+            SetStatus(Status.Online);
+            if (www.result == UnityWebRequest.Result.ProtocolError || response == null || !response.success)
+            {
+                string reason = response != null ? (response.error ?? response.detail ?? response.message) : null;
+                if (string.IsNullOrEmpty(reason)) reason = www.error ?? "The backend sent an unreadable reply.";
+                done(Fail(request, "Qiskit backend error: " + reason));
+                yield break;
+            }
 
-            QuantumResponse response = null;
-            try { response = JsonUtility.FromJson<QuantumResponse>(www.downloadHandler.text); }
-            catch (Exception e) { done(Fail(request, "The backend sent an unreadable reply: " + e.Message)); yield break; }
-
-            if (response == null) { done(Fail(request, "The backend sent an empty reply.")); yield break; }
+            response.action = request.action;
             response.source = "QISKIT AER";
             done(response);
         }
