@@ -25,6 +25,20 @@ public class DiagnosticsView : MonoBehaviour
     [SerializeField] Vector2 scanRange = new Vector2(48f, 288f);
     [SerializeField] TMP_Text codeText;
 
+    [Header("Collapsible code panel")]
+    [SerializeField] RectTransform board;
+    [SerializeField] CircuitBoardLayout boardLayout;
+    [SerializeField] RectTransform codePanel;
+    [SerializeField] GameObject codeView;
+    [SerializeField] Button codeToggle;
+    [SerializeField] TMP_Text codeToggleLabel;
+    [SerializeField] float boardTop = 18f;
+    [SerializeField] float panelBottom = 206f;
+    [SerializeField] float gap = 4f;
+    [SerializeField] float codeExpandedHeight = 94f;
+    [SerializeField] float codeHeaderHeight = 12f;
+    [SerializeField] float codeAnimTime = 0.25f;
+
     [Header("Readout")]
     [SerializeField] Image lampA;
     [SerializeField] Image lampB;
@@ -56,6 +70,9 @@ public class DiagnosticsView : MonoBehaviour
     int correction = -1;
     bool busy, verified;
     int openedFrame;
+    bool codeExpanded = true;
+    float codeT = 1f;
+    Coroutine codeAnim;
 
     public bool Verified => verified;
     /// <summary>Which backend produced the verified result, for the mission log.</summary>
@@ -74,6 +91,43 @@ public class DiagnosticsView : MonoBehaviour
         runButton.onClick.AddListener(RunDiagnosis);
         verifyButton.onClick.AddListener(Verify);
         notebookButton.onClick.AddListener(() => { if (!busy) onOpenNotebook.Invoke(); });
+        if (codeToggle != null) codeToggle.onClick.AddListener(ToggleCode);
+    }
+
+    // ---- Collapsible code panel ----
+
+    /// <summary>Collapses the generated code to its header and gives the space to the circuit, or the reverse.</summary>
+    public void ToggleCode()
+    {
+        codeExpanded = !codeExpanded;
+        if (codeAnim != null) StopCoroutine(codeAnim);
+        codeAnim = StartCoroutine(AnimateCode(codeExpanded ? 1f : 0f));
+    }
+
+    IEnumerator AnimateCode(float target)
+    {
+        float from = codeT;
+        for (float t = 0f; t < codeAnimTime; t += Time.unscaledDeltaTime)
+        {
+            ApplyCodeLayout(Mathf.Lerp(from, target, Mathf.SmoothStep(0f, 1f, t / codeAnimTime)));
+            yield return null;
+        }
+        ApplyCodeLayout(target);
+        codeAnim = null;
+    }
+
+    void ApplyCodeLayout(float t)
+    {
+        codeT = t;
+        if (codePanel == null || board == null) return;
+        float codeHeight = Mathf.Lerp(codeHeaderHeight, codeExpandedHeight, t);
+        float codeTop = panelBottom - codeHeight;
+        codePanel.anchoredPosition = new Vector2(codePanel.anchoredPosition.x, -codeTop);
+        codePanel.sizeDelta = new Vector2(codePanel.sizeDelta.x, codeHeight);
+        board.sizeDelta = new Vector2(board.sizeDelta.x, codeTop - gap - boardTop);
+        if (codeView != null) codeView.SetActive(t > 0.35f);
+        if (codeToggleLabel != null) codeToggleLabel.text = codeExpanded ? "[C] HIDE CODE" : "[C] SHOW CODE";
+        if (boardLayout != null) boardLayout.Layout();
     }
 
     public void Open()
@@ -83,6 +137,7 @@ public class DiagnosticsView : MonoBehaviour
         gameObject.SetActive(true);
         openedFrame = Time.frameCount;
         if (scanBar != null) scanBar.gameObject.SetActive(false);
+        ApplyCodeLayout(codeExpanded ? 1f : 0f);
         if (syndrome == null)
             Status("Run the diagnostic circuit. The parity checks will show which pairs of data qubits disagree.");
         Refresh();
@@ -94,7 +149,9 @@ public class DiagnosticsView : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
 
         var kb = Keyboard.current;
-        if (kb == null || busy || Time.frameCount == openedFrame) return;
+        if (kb == null || Time.frameCount == openedFrame) return;
+        // The code panel can be toggled even while a circuit is running.
+        if (busy) { if (kb.cKey.wasPressedThisFrame) ToggleCode(); return; }
 
         if (kb.escapeKey.wasPressedThisFrame) onClose.Invoke();
         else if (kb.rKey.wasPressedThisFrame) RunDiagnosis();
@@ -104,6 +161,7 @@ public class DiagnosticsView : MonoBehaviour
         else if (kb.digit2Key.wasPressedThisFrame) PlaceFix(1);
         else if (kb.digit3Key.wasPressedThisFrame) PlaceFix(2);
         else if (kb.digit0Key.wasPressedThisFrame) ClearFix();
+        else if (kb.cKey.wasPressedThisFrame) ToggleCode();
         else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
         {
             if (syndrome == null) RunDiagnosis(); else Verify();

@@ -24,6 +24,12 @@ public class TypewriterText : MonoBehaviour
         if (playOnEnable) Play();
     }
 
+    void OnDisable()
+    {
+        // If the panel is hidden mid-line, show the whole text rather than freezing on a partial line.
+        if (IsTyping) MarkDone();
+    }
+
     public void Play()
     {
         StopAllCoroutines();
