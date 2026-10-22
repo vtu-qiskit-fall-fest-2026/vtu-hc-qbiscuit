@@ -55,3 +55,19 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Unity (any project under UnityGame/)
+UnityGame/**/[Ll]ibrary/
+UnityGame/**/[Tt]emp/
+UnityGame/**/[Oo]bj/
+UnityGame/**/[Bb]uild/
+UnityGame/**/[Bb]uilds/
+UnityGame/**/[Ll]ogs/
+UnityGame/**/[Uu]ser[Ss]ettings/
+UnityGame/**/[Mm]emoryCaptures/
+UnityGame/**/[Rr]ecordings/
+UnityGame/**/*.csproj
+UnityGame/**/*.sln
+UnityGame/**/*.slnx
+UnityGame/**/*.user
+UnityGame/**/.vsconfig
