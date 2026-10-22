@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 01_THE_BASICS
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 01
+  title: THE BASICS
+  unlocked: 1
+  entries:
+  - title: 1. Classical bit
+    tag: 1
+    body: "A <b>bit</b> is the basic unit of classical digital information. At any
+      moment it holds exactly one of two values: 0 or 1.\n\n<color=#ffe2a8><b>VALUE  
+      THINK OF IT AS   MEANING</b></color>\n  0     Switch OFF       One of the two
+      values\n  1     Switch ON        The other value\n\nEverything on an ordinary
+      computer, such as text, photos and games, is stored as long strings of bits.
+      A classical bit always has one definite value, and you can read it without
+      changing it."
+    bench: 0
+    qiskit: 'from qiskit import ClassicalRegister
+
+
+      syn = ClassicalRegister(2,
+      "syn")   # two classical bits
+
+      out = ClassicalRegister(3, "out")   #
+      three more for the data'
+  - title: 2. Qubit
+    tag: 1
+    body: "A <b>qubit</b> (quantum bit) is the basic unit of quantum information.
+      When you read it out, you get 0 or 1, just like a bit. The difference is what
+      it can be before you read it: its state can be a <b>superposition</b> of the
+      two basis states, written |0\u27E9 and |1\u27E9 (see entry 4).\n\nReal qubits
+      are physical systems, for example a tiny superconducting circuit, a trapped
+      ion or a single photon. They follow the rules of quantum mechanics, which is
+      why they behave differently from classical bits.\n\n<color=#ffe2a8><b>                
+      CLASSICAL BIT     QUBIT</b></color>\nRead-out values  0 or 1            0 or
+      1\nBefore reading   Definitely 0/1    Can be a superposition\nEffect of read  
+      None              Updates the qubit's state\nCopy unknown?    Yes, freely      
+      No (no-cloning theorem)\n\n<color=#ff8a5c><b>\u258C COMMON MISCONCEPTION</b>\n<indent=0.9em>A
+      qubit is not a switch that is secretly 0 or 1 while we simply do not know which.
+      Its state follows quantum rules, and measurement probabilities can differ from
+      anything a classical bit could produce.</indent></color>"
+    bench: 0
+    qiskit: "from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(1)   # one
+      qubit\n# every qubit starts in |0\u27E9"
+  - title: "3. Basis states |0\u27E9 and |1\u27E9"
+    tag: 1
+    body: "These are the two standard reference states of a qubit. The symbol |\u27E9
+      is called a <b>ket</b>. It is the notation physicists use to say \"this is
+      a quantum state\", not just a plain number.\n\n\u2022 |0\u27E9: measuring in
+      the computational basis returns 0 with certainty.\n\u2022 |1\u27E9: measuring
+      in the computational basis returns 1 with certainty.\n\nWhen a qubit is in
+      |0\u27E9 or |1\u27E9, it behaves much like a classical bit. That is why this
+      puzzle can be solved by reading bit patterns."
+    bench: 0
+    qiskit: "from qiskit.quantum_info import Statevector\n\nStatevector.from_label(\"0\")  
+      # |0\u27E9\nStatevector.from_label(\"1\")   # |1\u27E9"
+  - title: 4. Superposition
+    tag: 2
+    body: "A general single-qubit state mixes the two basis states:\n\n        |\u03C8\u27E9
+      = \u03B1|0\u27E9 + \u03B2|1\u27E9\n\nHere \u03B1 and \u03B2 are numbers called
+      <b>amplitudes</b> (they can be complex), and together they satisfy |\u03B1|\xB2
+      + |\u03B2|\xB2 = 1.\n\nWhen the qubit is measured in the computational basis:\n\u2022
+      the probability of getting 0 is |\u03B1|\xB2;\n\u2022 the probability of getting
+      1 is |\u03B2|\xB2.\n\n<b>Worked example.</b> If \u03B1 = \u03B2 = 1/\u221A2,
+      then |\u03B1|\xB2 = |\u03B2|\xB2 = 1/2. Each measurement gives 0 or 1 with
+      a 50% chance, like a fair coin. Run the same circuit many times (each run is
+      called a <b>shot</b> in Qiskit) and about half the results will be 0.\n\n<color=#ff8a5c><b>\u258C
+      COMMON MISCONCEPTION</b>\n<indent=0.9em>Superposition does not mean the qubit
+      shows both 0 and 1 at once. A single measurement gives exactly one outcome.
+      It also does not mean \"unknown value\": a superposition is a perfectly definite
+      quantum state whose randomness appears only when you measure.</indent></color>"
+    bench: 4
+    qiskit: "qc = QuantumCircuit(1, 1)\nqc.h(0)            # Hadamard: (|0\u27E9
+      + |1\u27E9)/\u221A2\nqc.measure(0, 0)\n# 100 shots -> roughly 50 zeros and
+      50 ones"
+  - title: 5. Measurement
+    tag: 1
+    body: "<b>Measurement</b> produces a classical result (0 or 1) from a quantum
+      system. For a qubit in superposition, the result is random, with probabilities
+      set by the state. Afterwards the qubit is left in the state that matches the
+      result you obtained, so a measurement generally changes the qubit.\n\n<color=#3fe0b5><b>\u258C
+      IN THIS INVESTIGATION</b>\n<indent=0.9em>The diagnostic console shows results
+      from measuring a simulated quantum circuit. Two kinds of measurement matter
+      here: the two syndrome bits (which help you find the error) and the final data
+      bits (which verify the repair).</indent></color>"
+    bench: 4
+    qiskit: 'qc.measure(0, 0)    # qubit 0 -> classical bit 0
+
+      qc.measure_all()   
+      # or measure every qubit'
+  guides:
+  - label: Introduction to Qiskit
+    url: https://quantum.cloud.ibm.com/docs/en/guides/tools-intro
+  - label: Plot quantum states
+    url: https://quantum.cloud.ibm.com/docs/en/guides/plot-quantum-states
+  - label: Measure qubits
+    url: https://quantum.cloud.ibm.com/docs/en/guides/measure-qubits

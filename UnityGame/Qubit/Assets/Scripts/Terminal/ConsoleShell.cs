@@ -23,6 +23,14 @@ public class ConsoleShell : MonoBehaviour
     [SerializeField] TMP_Text statusLine;
     [SerializeField] TypewriterText mainPanelText;
 
+    [Header("Research notebook")]
+    [SerializeField] NotebookView notebook;
+    [SerializeField] TerminalMenu modulesMenu;
+    [SerializeField] GameObject[] hiddenWhileReading;
+    [SerializeField] TMP_Text keysText;
+    [SerializeField] string consoleKeys = "[UP/DOWN] MODULE    [ENTER] OPEN    [ESC] MAIN TERMINAL";
+    [SerializeField] string notebookKeys = "[W/S] ENTRY  [A/D] SECTION  [PGUP/PGDN] SCROLL  [1-3] GUIDE  [P] PDF  [ESC] BACK";
+
     [Tooltip("Raised when the player opens the COMMS LINK module.")]
     public UnityEvent onOpenComms;
 
@@ -71,7 +79,23 @@ public class ConsoleShell : MonoBehaviour
         onOpenComms.Invoke();
     }
 
-    public void NotebookUnavailable() => Status("RESEARCH NOTEBOOK: ANSWER THE TRANSMISSION FIRST.");
+    public void OpenNotebook()
+    {
+        foreach (var g in hiddenWhileReading) g.SetActive(false);
+        modulesMenu.enabled = false;
+        if (keysText != null) keysText.text = notebookKeys;
+        notebook.Open();
+    }
+
+    public void CloseNotebook()
+    {
+        notebook.gameObject.SetActive(false);
+        foreach (var g in hiddenWhileReading) g.SetActive(true);
+        modulesMenu.enabled = true;
+        if (keysText != null) keysText.text = consoleKeys;
+        Status("RESEARCH NOTEBOOK CLOSED.");
+    }
+
     public void DiagnosticsOffline() => Status("DIAGNOSTIC CONSOLE: MODULE OFFLINE.");
     public void ReportLocked() => Status("MISSION REPORT: NO VERIFIED RESULT TO TRANSMIT.");
 

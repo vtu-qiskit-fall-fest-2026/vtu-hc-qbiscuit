@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 09_GLOSSARY
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 09
+  title: GLOSSARY
+  unlocked: 1
+  entries:
+  - title: Terms A to M
+    tag: 0
+    body: "<color=#ffe2a8><b>Amplitude</b></color>\nA number (\u03B1 or \u03B2) that
+      determines measurement probabilities of a basis state.\n\n<color=#ffe2a8><b>Ancilla</b></color>\nA
+      helper qubit used to record a check, so data qubits need not be measured.\n\n<color=#ffe2a8><b>Bit-flip
+      error</b></color>\nAn error that swaps |0\u27E9 and |1\u27E9, modelled as an
+      unintended X gate.\n\n<color=#ffe2a8><b>CNOT</b></color>\nTwo-qubit gate that
+      flips the target only if the control is 1.\n\n<color=#ffe2a8><b>Data qubit</b></color>\nA
+      qubit that carries the encoded information (q0, q1, q2).\n\n<color=#ffe2a8><b>Ket
+      |\u27E9</b></color>\nNotation for a quantum state, such as |0\u27E9.\n\n<color=#ffe2a8><b>Logical
+      bit</b></color>\nInformation encoded across several physical qubits, for example
+      |0_L\u27E9 = |000\u27E9.\n\n<color=#ffe2a8><b>Measurement</b></color>\nObtaining
+      a classical result from a quantum system."
+    bench: 0
+    qiskit: 
+  - title: Terms P to X
+    tag: 0
+    body: "<color=#ffe2a8><b>Parity / XOR (\u2295)</b></color>\nTells whether two
+      bits differ (1) or agree (0).\n\n<color=#ffe2a8><b>Qiskit / Qiskit Aer</b></color>\nA
+      Python toolkit for building quantum circuits, and its local simulator.\n\n<color=#ffe2a8><b>Shot</b></color>\nOne
+      run of a circuit ending in a measurement.\n\n<color=#ffe2a8><b>Superposition</b></color>\nA
+      quantum state combining basis states, such as \u03B1|0\u27E9 + \u03B2|1\u27E9.\n\n<color=#ffe2a8><b>Syndrome</b></color>\nThe
+      parity-check results used to locate an error.\n\n<color=#ffe2a8><b>Verification</b></color>\nA
+      check that the corrected circuit gives the expected result.\n\n<color=#ffe2a8><b>X
+      gate</b></color>\nThe gate that swaps |0\u27E9 and |1\u27E9."
+    bench: 0
+    qiskit: 
+  guides:
+  - label: Introduction to Qiskit
+    url: https://quantum.cloud.ibm.com/docs/en/guides/tools-intro
+  - label: Get started with Sampler
+    url: https://quantum.cloud.ibm.com/docs/en/guides/get-started-with-sampler

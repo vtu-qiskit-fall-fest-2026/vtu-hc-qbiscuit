@@ -10,6 +10,8 @@ public class TerminalMenu : MonoBehaviour
     [SerializeField] List<TerminalMenuItem> items = new List<TerminalMenuItem>();
     [SerializeField] TMP_Text descriptionText;
     [SerializeField] AudioSource blip;
+    [Tooltip("Start at the first item each time the menu opens. Turn off to keep the last selection.")]
+    [SerializeField] bool resetOnEnable = true;
 
     public UnityEvent onBack;
 
@@ -25,7 +27,7 @@ public class TerminalMenu : MonoBehaviour
     {
         // The key press that opened this panel must not also trigger it.
         enabledFrame = Time.frameCount;
-        index = 0;
+        if (resetOnEnable) index = 0;
         Refresh();
     }
 

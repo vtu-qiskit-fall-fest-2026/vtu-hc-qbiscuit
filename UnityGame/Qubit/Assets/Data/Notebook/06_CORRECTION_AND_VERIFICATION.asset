@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 06_CORRECTION_AND_VERIFICATION
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 06
+  title: CORRECTION AND VERIFICATION
+  unlocked: 1
+  entries:
+  - title: 18. Correction operation
+    tag: 1
+    body: "Once the syndrome points to a flipped qubit, apply an <b>X gate</b> to
+      that data qubit. For example, if q1 has flipped from 0 to 1, applying X to
+      q1 flips it back to 0.\n\n<color=#ff8a5c><b>\u258C LIMITATION</b>\n<indent=0.9em>If
+      the syndrome is 00, apply <b>no</b> correction. An X on a healthy qubit would
+      <b>create</b> an error.</indent></color>"
+    bench: 1
+    qiskit: "if fix is not None:\n    qc.x(data[fix])   # undo the flip"
+  - title: 19. Verification
+    tag: 1
+    body: "<b>Verification</b> is a follow-up check that the corrected circuit meets
+      the expected condition. Here, the encoded state started as |000\u27E9, so a
+      successful repair means that measuring the three data qubits gives 000. The
+      console reports success only if the simulation's actual result passes this
+      rule.\n\nA wrong correction should fail verification, letting you re-read the
+      syndrome and try again:\n\n<color=#ffe2a8><b>ERROR  SYNDROME  YOUR FIX   DATA 
+      RESULT</b></color>\n q1      11      X on q1    000   Verified\n q1      11     
+      X on q0    110   Fails: two bits wrong\n none    00      X on q2    001   Fails:
+      you made an error\n q2      01      none       001   Fails: error remains\n\n<color=#c08a3e><b>\u258C
+      RESEARCH NOTE</b>\n<indent=0.9em>Checking for 000 works here because the starting
+      state is known. In a real experiment the encoded state is usually unknown,
+      so verification uses other methods, such as repeating the syndrome measurement.</indent></color>"
+    bench: 3
+    qiskit: 'qc.measure(data, out)
+
+      verified = out_bits == "000"   # decided
+      by the simulation'
+  - title: 20. Limitations of this code
+    tag: 1
+    body: "The three-qubit repetition code corrects a <b>single</b> bit-flip (X)
+      error under the assumptions of this exercise. It has important limits:\n\n\u2022
+      <b>Phase-flip errors go unnoticed.</b> A phase flip changes the sign, turning
+      \u03B1|000\u27E9 + \u03B2|111\u27E9 into \u03B1|000\u27E9 \u2212 \u03B2|111\u27E9.
+      The parity checks compare bit values only, so they cannot see it.\n\u2022 <b>Two
+      errors can mislead the syndrome.</b> If q0 and q1 both flip, the data reads
+      110, the syndrome is 01, and the \"fix\" (X on q2) produces 111. The encoded
+      value has silently changed from |0_L\u27E9 to |1_L\u27E9.\n\u2022 <b>It is
+      a teaching model.</b> Real quantum computers use larger codes (such as Shor's
+      nine-qubit code or the surface code) that handle both bit-flip and phase-flip
+      errors, repeat the checks continually, and allow for faulty measurements.\n\n<color=#ff8a5c><b>\u258C
+      LIMITATION</b>\n<indent=0.9em>A successful verification shows how <b>this</b>
+      simulated circuit behaves. It does not prove that every kind of quantum error
+      has been eliminated.</indent></color>"
+    bench: 3
+    qiskit: 'qc.z(0)   # phase flip: the parity checks never see it
+
+      qc.x(0);
+      qc.x(1)   # two flips: syndrome 01 points to q2'
+  guides:
+  - label: Exact and noisy simulation with Qiskit Aer
+    url: https://quantum.cloud.ibm.com/docs/en/guides/simulate-with-qiskit-aer
+  - label: Get started with Sampler
+    url: https://quantum.cloud.ibm.com/docs/en/guides/get-started-with-sampler
+  - label: Overview of noise management techniques
+    url: https://quantum.cloud.ibm.com/docs/en/guides/error-mitigation-overview

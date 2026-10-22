@@ -71,3 +71,6 @@ UnityGame/**/*.sln
 UnityGame/**/*.slnx
 UnityGame/**/*.user
 UnityGame/**/.vsconfig
+
+# Blender autosave backups
+*.blend1

@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 04_THE_THREE_QUBIT_REPETITION_CODE
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 04
+  title: THE THREE-QUBIT REPETITION CODE
+  unlocked: 1
+  entries:
+  - title: 13. Repetition code
+    tag: 1
+    body: "The <b>three-qubit repetition code</b> stores one <b>logical</b> bit of
+      information redundantly across three <b>physical</b> qubits:\n\n        |0_L\u27E9
+      = |000\u27E9        |1_L\u27E9 = |111\u27E9\n\nThe subscript L means \"logical\".
+      The logical information lives in all three qubits together, not in any single
+      one.\n\n<color=#ffe2a8><b>\u258C INTUITION</b>\n<indent=0.9em>It works like
+      sending a message three times and taking a majority vote. If all three copies
+      should agree, one flipped value stands out. By checking which pairs disagree,
+      you can tell which qubit was flipped.</indent></color>\n\n<color=#c08a3e><b>\u258C
+      GO DEEPER</b>\n<indent=0.9em>The code can also protect a superposition. Using
+      CNOT gates, a qubit in the state \u03B1|0\u27E9 + \u03B2|1\u27E9 is encoded
+      as \u03B1|000\u27E9 + \u03B2|111\u27E9.\n\n<b>Encoding is not copying.</b>
+      This is not three copies of the original qubit (the no-cloning theorem forbids
+      copying an unknown quantum state). It is an entangled state in which the three
+      qubits share the information. In this game the input is the simple state |000\u27E9,
+      so you can reason with plain bit patterns.</indent></color>"
+    bench: 3
+    qiskit: "qc.cx(0, 1)   # copy the bit value into q1\nqc.cx(0, 2)   # and q2:
+      \u03B1|0\u27E9+\u03B2|1\u27E9 -> \u03B1|000\u27E9+\u03B2|111\u27E9"
+  - title: 14. Data qubits
+    tag: 1
+    body: "The <b>data qubits</b> carry the encoded information. In this game they
+      are labelled:\n\n\u2022 q0: first data qubit\n\u2022 q1: middle data qubit\n\u2022
+      q2: third data qubit\n\nThe diagnostic circuit checks relationships between
+      neighbouring data qubits."
+    bench: 0
+    qiskit: data = QuantumRegister(3, "d")   # q0, q1, q2
+  - title: 15. Ancilla qubits
+    tag: 1
+    body: "An <b>ancilla</b> is an extra helper qubit, initially set to |0\u27E9,
+      used to record the result of a check so we can measure the helper instead of
+      the data. This circuit uses two:\n\n\u2022 <b>Ancilla A</b> records the check
+      on q0 and q1 (lamp A on the console).\n\u2022 <b>Ancilla B</b> records the
+      check on q1 and q2 (lamp B on the console).\n\nAncillas are <b>not</b> extra
+      copies of the logical information."
+    bench: 0
+    qiskit: "anc = QuantumRegister(2, \"a\")   # A and B, start in |0\u27E9"
+  - title: 16. Parity check
+    tag: 1
+    body: "A <b>parity check</b> tells you whether two bits agree or differ. It uses
+      the XOR operation, written \u2295:\n\n<color=#ffe2a8><b>FIRST  SECOND  XOR 
+      MEANING</b></color>\n  0      0      0    agree\n  0      1      1    differ\n 
+      1      0      1    differ\n  1      1      0    agree\n\n<b>How the circuit
+      computes it.</b> Ancilla A starts at 0. One CNOT from q0 and one CNOT from
+      q1 each flip A if their control is 1. If q0 and q1 are both 1, A is flipped
+      twice and ends at 0 (they agree). If only one is 1, A is flipped once and ends
+      at 1 (they differ). So A ends up holding q0 \u2295 q1, and B ends up holding
+      q1 \u2295 q2.\n\n<color=#c08a3e><b>\u258C GO DEEPER</b>\n<indent=0.9em>For
+      the protected state \u03B1|000\u27E9 + \u03B2|111\u27E9, both branches have
+      the same parities (all bits agree), so the checks return 00 <b>whatever \u03B1
+      and \u03B2 are</b> and leave the superposition intact. After an X error on
+      q1, the state becomes \u03B1|010\u27E9 + \u03B2|101\u27E9. Both branches now
+      give the same parities again (11), so the syndrome is certain and still reveals
+      nothing about \u03B1 or \u03B2.</indent></color>"
+    bench: 3
+    qiskit: "qc.cx(data[0], anc[0])\nqc.cx(data[1], anc[0])   # A = q0 \u2295 q1\nqc.cx(data[1],
+      anc[1])\nqc.cx(data[2], anc[1])   # B = q1 \u2295 q2"
+  - title: 17. Syndrome
+    tag: 1
+    body: "The <b>syndrome</b> is the collection of parity-check results used to
+      diagnose an error. The word is borrowed from medicine: like symptoms, it points
+      to the problem without showing the cause directly. In this game it is written
+      as two bits, in this order:\n\n        s = (q0 \u2295 q1, q1 \u2295 q2)\n\nIf
+      there is at most one bit-flip error, the two bits identify the affected data
+      qubit. The syndrome tells you <b>where</b> the error is, not what the logical
+      value is."
+    bench: 3
+    qiskit: 'sim = AerSimulator()
+
+      counts = sim.run(qc, shots=256).result().get_counts()
+
+      key
+      = max(counts, key=counts.get)
+
+      syndrome = key[::-1]   # Qiskit prints
+      bits right-to-left'
+  guides:
+  - label: Efficient simulation of stabilizer circuits
+    url: https://quantum.cloud.ibm.com/docs/en/guides/simulate-stabilizer-circuits
+  - label: Measure qubits
+    url: https://quantum.cloud.ibm.com/docs/en/guides/measure-qubits
+  - label: Classical feedforward and control flow
+    url: https://quantum.cloud.ibm.com/docs/en/guides/classical-feedforward-and-control-flow

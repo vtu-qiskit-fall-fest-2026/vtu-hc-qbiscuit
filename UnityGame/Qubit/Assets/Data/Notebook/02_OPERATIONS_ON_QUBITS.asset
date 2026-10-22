@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 02_OPERATIONS_ON_QUBITS
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 02
+  title: OPERATIONS ON QUBITS
+  unlocked: 1
+  entries:
+  - title: 6. Quantum gate
+    tag: 1
+    body: 'A <b>quantum gate</b> is an operation that changes the state of one or
+      more qubits. Gates are the building blocks of every quantum circuit. Think
+      of a gate as a single instruction, such as "flip this qubit" or "flip that
+      qubit if another one is 1".
+
+
+      Gates are <b>reversible</b>: every gate
+      can be undone by another operation. This matters for error correction, because
+      a flip can be undone by flipping again.'
+    bench: 0
+    qiskit: 'qc = QuantumCircuit(3)
+
+      qc.x(0)        # one instruction = one
+      gate
+
+      qc.cx(0, 1)    # a two-qubit gate
+
+      print(qc.draw())'
+  - title: 7. The X gate (bit-flip gate)
+    tag: 1
+    body: "The <b>Pauli-X gate</b> swaps the two basis states:\n\n        X|0\u27E9
+      = |1\u27E9        X|1\u27E9 = |0\u27E9\n\n<color=#ffe2a8><b>INPUT    GATE   
+      OUTPUT</b></color>\n |0\u27E9      X       |1\u27E9\n |1\u27E9      X      
+      |0\u27E9\n\nX works like a classical NOT. It also acts on superpositions by
+      swapping the two amplitudes: X(\u03B1|0\u27E9 + \u03B2|1\u27E9) = \u03B1|1\u27E9
+      + \u03B2|0\u27E9. Applying X twice returns the qubit to where it started.\n\n<color=#3fe0b5><b>\u258C
+      IN THIS INVESTIGATION</b>\n<indent=0.9em>In this game, an X gate plays two
+      roles: an <b>unintended</b> X models a bit-flip error, and a <b>deliberate</b>
+      X is the correction. The gate is the same. What differs is whether it was intended.</indent></color>"
+    bench: 1
+    qiskit: "qc.x(1)   # flip q1: |0\u27E9 -> |1\u27E9\nqc.x(1)   # flip back: X\xB7X
+      = identity"
+  - title: 8. The CNOT gate
+    tag: 2
+    body: "The <b>controlled-NOT (CNOT)</b> gate acts on two qubits, a <b>control</b>
+      and a <b>target</b>. If the control is 1, it flips the target. If the control
+      is 0, it does nothing. The control is never changed.\n\n<color=#ffe2a8><b>CONTROL 
+      TARGET  ->  CONTROL  TARGET</b></color>\n   0       0           0       0\n  
+      0       1           0       1\n   1       0           1       1\n   1      
+      1           1       0\n\nCNOT is how one qubit can \"inspect\" another. If
+      the target starts at 0, a CNOT adds the control's value to it (mod 2). The
+      diagnostic circuit uses exactly this trick to compute parity checks."
+    bench: 2
+    qiskit: 'qc.cx(control, target)
+
+      qc.cx(0, 3)   # q0 controls ancilla A'
+  - title: 9. Quantum circuit
+    tag: 1
+    body: "A <b>quantum circuit</b> is an ordered list of gates and measurements
+      applied to qubits. In a circuit diagram, each qubit is a horizontal line and
+      time runs from left to right. This is the station's diagnostic circuit, drawn
+      as a grid:\n\n<color=#ffe2a8><b>QUBIT  START  ERROR?  C1  C2  C3  C4  MEASURE</b></color>\n
+      q0      0      X?     \u25CF\n q1      0      X?         \u25CF   \u25CF\n
+      q2      0      X?                 \u25CF\n A       0             \u2295   \u2295            
+      M\n B       0                     \u2295   \u2295     M\n\n<color=#c08a3e>\u25CF
+      = control, \u2295 = target of a CNOT, X? = possible bit-flip error, M = measurement.
+      Ancilla A collects the parity of q0 and q1. Ancilla B collects the parity of
+      q1 and q2.</color>\n\n<color=#3fe0b5><b>\u258C IN THIS INVESTIGATION</b>\n<indent=0.9em>Three
+      <b>data</b> wires carry the information being protected. Two extra <b>helper</b>
+      wires (A and B) detect disagreements between the data qubits.</indent></color>"
+    bench: 3
+    qiskit: 'data = QuantumRegister(3, "d")
+
+      anc  = QuantumRegister(2, "a")
+
+      syn 
+      = ClassicalRegister(2, "syn")
+
+      qc = QuantumCircuit(data, anc, syn)
+
+
+      qc.cx(data[0],
+      anc[0])   # A collects q0
+
+      qc.cx(data[1], anc[0])   # ...and q1
+
+      qc.cx(data[1],
+      anc[1])   # B collects q1
+
+      qc.cx(data[2], anc[1])   # ...and q2
+
+      qc.measure(anc,
+      syn)'
+  guides:
+  - label: Construct circuits
+    url: https://quantum.cloud.ibm.com/docs/en/guides/construct-circuits
+  - label: Circuit library
+    url: https://quantum.cloud.ibm.com/docs/en/guides/circuit-library
+  - label: Visualize circuits
+    url: https://quantum.cloud.ibm.com/docs/en/guides/visualize-circuits

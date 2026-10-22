@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5285559cfa33d7041aa12c3287c4d2a7, type: 3}
+  m_Name: 07_YOUR_MISSION_PROCEDURE
+  m_EditorClassIdentifier: Assembly-CSharp::NotebookSection
+  number: 07
+  title: YOUR MISSION PROCEDURE
+  unlocked: 1
+  entries:
+  - title: Mission procedure
+    tag: 1
+    body: "<color=#ffe2a8><b> #  STEP                  WHAT YOU DO</b></color>\n
+      1  Receive the report    A research partner reports\n                         
+      an inconsistent result.\n 2  Review the notebook   Recall the X gate, bit-flip\n                         
+      errors and parity checks.\n 3  Run diagnosis         Execute the diagnostic
+      circuit\n                          using Qiskit Aer.\n 4  Read the syndrome    
+      Work out which data qubit the\n                          two parity bits indicate.\n
+      5  Apply correction      Select the matching X, or none\n                         
+      if the syndrome is 00.\n 6  Verify the result     Check the simulation's outcome.\n                         
+      Retry if it fails.\n 7  Transmit the report   After verification succeeds,\n                         
+      report diagnosis and correction."
+    bench: 0
+    qiskit: 'from qiskit import transpile
+
+      from qiskit_aer import AerSimulator
+
+
+      sim
+      = AerSimulator()
+
+      job = sim.run(transpile(qc, sim), shots=256)
+
+      counts
+      = job.result().get_counts()'
+  - title: 'Field notes: before you proceed'
+    tag: 0
+    body: "<color=#ffe2a8><b>\u258C FIELD NOTES</b>\n<indent=0.9em>\u2022 The X gate
+      swaps |0\u27E9 and |1\u27E9.\n\u2022 The syndrome describes disagreement between
+      neighbouring data qubits.\n\u2022 For a single error, the syndrome tells you
+      which correction to try.\n\u2022 Only the simulation's measured result decides
+      whether verification succeeds.</indent></color>"
+    bench: 0
+    qiskit: 
+  guides:
+  - label: Quickstart
+    url: https://quantum.cloud.ibm.com/docs/en/guides/quick-start
+  - label: Local testing mode
+    url: https://quantum.cloud.ibm.com/docs/en/guides/local-testing-mode
