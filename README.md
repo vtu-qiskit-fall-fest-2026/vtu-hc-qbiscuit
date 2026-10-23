@@ -35,6 +35,7 @@
 - [Approach & Architecture](#-approach--architecture)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
+- [The Game (Unity)](#-the-game-unity)
 - [How to Run](#-how-to-run)
 - [How to Push Code](#-how-to-push-code)
 - [Submission Checklist](#-submission-checklist)
@@ -169,6 +170,114 @@ vtu-hc-qbiscuit/
 ```
 
 **How the pieces talk:** the WebGL build on itch.io sends each circuit request to `https://andromeda-quantum-backend.onrender.com/run`, which runs it on Qiskit Aer and returns the result. In the Unity editor the game uses a local server at `http://127.0.0.1:8000/run` instead. If the hosted server can't be reached, the game falls back to a clearly labelled offline stand-in.
+
+---
+
+## 🎮 The Game (Unity)
+
+**Andromeda Station: The Last Qubit** is a short, educational puzzle game played entirely on a retro CRT terminal.
+
+▶ **Play in the browser:** [sohampawar.itch.io/the-lost-qubit](https://sohampawar.itch.io/the-lost-qubit)
+
+### Story
+
+It is the polar night at an Antarctic research station. At **02:17 UTC** a mission specialist on a lunar spacecraft makes contact: the ship's latest control calculation, run on its experimental quantum processor, **failed its validation check**. As the researcher on duty, you must find the fault, correct it, find out *why* it happened, and send back a verified report.
+
+### Game flow
+
+```mermaid
+flowchart TD
+    A[Research room<br/>first-person view] -->|ENTER| B[CRT power-on<br/>BIOS POST + OS splash]
+    B --> C[Main terminal menu<br/>Begin · Config · Personnel]
+    C --> D[Console<br/>flat terminal UI]
+    D --> E[COMMS LINK<br/>Act I transmission]
+    E --> F[NOTEBOOK<br/>read · bench · Qiskit · docs]
+    F --> G[DIAGNOSTICS<br/>run syndrome → place X → verify]
+    G --> H[CRYO CONTROL<br/>measure → decay → cool]
+    H --> I[MISSION REPORT<br/>transmit result + cause]
+    I --> J[Ending<br/>The next experiment remains open.]
+    G -. circuit requests .-> Q[(Qiskit Aer backend<br/>on Render)]
+    H -. noisy T1 runs .-> Q
+```
+
+### Modules
+
+| Module | What the player does | What it teaches |
+| :--- | :--- | :--- |
+| **Comms Link** | Answers the lunar vessel's typed transmissions | The mission and the failed validation |
+| **Notebook** | 9 sections / 27 entries with READ, BENCH (hands-on mini labs), QISKIT code and DOCS tabs; links to IBM Quantum guides and the full notebook PDF | Qubits, X and CNOT gates, parity, the repetition code, shots |
+| **Diagnostics** | Runs the 3-qubit bit-flip repetition code, reads the syndrome lamps (`00/10/11/01`), places the correcting X gate and verifies. Live, collapsible generated Qiskit code mirrors the backend circuit | Error detection, syndromes, correction, verification |
+| **Cryo Control** ("Hold the Qubit") | 1. Scan three qubits to find the leaky one. 2. Chart its survival against hold time to measure T1. 3. Turn the cooling dial so it keeps \|1⟩ ≥ 90% at 40 µs, then try ENCODE ×3 | T1 energy relaxation, why qubits are kept cold, how error correction helps |
+| **Mission Report** | Transmits the verified result, its cause and the mitigation | Closing the scientific loop |
+
+Every diagnosis, verification and cryo scan is a real circuit run on **Qiskit Aer**. If the server can't be reached, a clearly labelled *offline stand-in* keeps the game playable — the game never fakes a Qiskit result.
+
+### Screenshots
+
+| | |
+| :---: | :---: |
+| ![Research room](UnityGame/Screenshots/01_room.png)<br/>Research room | ![Main terminal](UnityGame/Screenshots/02_main_terminal.png)<br/>Main terminal (CRT) |
+| ![Console](UnityGame/Screenshots/03_console.png)<br/>Console and modules | ![Notebook](UnityGame/Screenshots/04_notebook.png)<br/>Research notebook |
+| ![Diagnostics](UnityGame/Screenshots/05_diagnostics.png)<br/>Diagnostics: repair verified | ![Cryo measure](UnityGame/Screenshots/06_cryo_measure.png)<br/>Cryo 1: measure |
+| ![Cryo decay](UnityGame/Screenshots/07_cryo_decay.png)<br/>Cryo 2: decay chart | ![Cryo cool](UnityGame/Screenshots/08_cryo_cool.png)<br/>Cryo 3: cooling, stable |
+| ![Ending](UnityGame/Screenshots/09_ending.png)<br/>Mission log and ending | |
+
+### How the game talks to Qiskit
+
+```mermaid
+sequenceDiagram
+    participant P as Player (WebGL on itch.io)
+    participant U as Unity · QuantumBackend.cs
+    participant R as Render · FastAPI /run
+    participant A as Qiskit Aer
+    U->>R: GET /health (at launch, wakes the server)
+    R-->>U: {"status":"ok"} → "QISKIT AER: ONLINE"
+    P->>U: Run diagnosis / verify / cryo scan
+    U->>R: POST /run {version:1, action, ...}
+    R->>A: build + simulate circuit
+    A-->>R: counts
+    R-->>U: syndrome / verified / survival, T1
+    U-->>P: lamps, verification, chart, readouts
+```
+
+### Tech and design
+
+| Area | Choice |
+| :--- | :--- |
+| Engine | Unity 6 (6000.3.10f1), URP, new Input System |
+| UI | uGUI + TextMeshPro, built as real scene UI (no procedural layouts) |
+| Look | Custom `UI_CRT` shader (curvature, scanlines, phosphor glow) that blends from tube to flat; palette: teal `#101B1D`, sage `#A2B8A8`, aged amber `#D0A46D`, phosphor `#E3C58F`, mint `#8FBCA0`, coral `#C87963` |
+| Art | Pixel-art research room modelled in Blender (`UnityGame/Blender/research_room.blend`) |
+| Fonts | VT323, IBM Plex Mono, Noto Sans Math (SIL OFL 1.1) |
+| Audio | Synthesised retro SFX (keys, beeps, degauss, compute), ambience, two crossfading music tracks |
+| Data | Notebook sections and dialogue as ScriptableObjects (`Assets/Data`) |
+| Networking | `UnityWebRequest` to the Render backend; editor uses `http://127.0.0.1:8000/run`, builds use `https://andromeda-quantum-backend.onrender.com/run` |
+| Build | WebGL, Gzip + decompression fallback, custom `Andromeda` page template for itch.io |
+
+### Controls
+
+| Key | Action |
+| :--- | :--- |
+| `ENTER` | Confirm / continue / fire |
+| `↑ ↓` / `W S` | Move through menus |
+| `ESC` | Back |
+| `TAB` · `A D` | Notebook tabs · sections |
+| `R` · `1–3` · `V` | Diagnostics: run · place X · verify |
+| `C` · `N` | Show/hide Qiskit code · open notebook |
+| `← →` · `↑ ↓` · `E` | Cryo: dial or hold time · hold time · encode ×3 |
+| `H` | Show/hide HOW TO PLAY |
+
+### Running the Unity project
+
+1. Open `UnityGame/Qubit` in **Unity 6000.3.10f1** and load `Assets/Scenes/Intro.unity`.
+2. (Optional) start the backend locally so the editor uses real Qiskit:
+   ```bash
+   cd Andromeda_Backend
+   uv run --no-project --python 3.12 --with-requirements requirements.txt uvicorn api_server:app --host 127.0.0.1 --port 8000
+   ```
+   Without it the game uses the labelled offline stand-in.
+3. Press **Play**, then **ENTER** to power on the terminal.
+4. To build for itch.io: *File → Build Profiles → Web*, build to `UnityGame/Builds/WebGL`, zip the folder contents (with `index.html` at the root) and upload as an HTML game (960 × 540, fullscreen button on).
 
 ---
 

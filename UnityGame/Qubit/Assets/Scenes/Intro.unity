@@ -24946,6 +24946,7 @@ MonoBehaviour:
   buildServerUrl: https://andromeda-quantum-backend.onrender.com/run
   timeoutSeconds: 75
   allowOfflineStandIn: 1
+  fallBackWhenUnreachable: 1
   standInDelay: 0.9
   healthInterval: 15
   retryInterval: 8
@@ -36355,6 +36356,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1332065390}
   m_CullTransparentMesh: 1
+--- !u!1 &1332401232 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2607288854762723739, guid: 3e89b88bec525a14996d5340981598d9, type: 3}
+  m_PrefabInstance: {fileID: 1640473035}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1334810430
 GameObject:
   m_ObjectHideFlags: 0
@@ -45710,14 +45716,17 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2607288854762723739, guid: 3e89b88bec525a14996d5340981598d9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1640473041}
   m_SourcePrefab: {fileID: 100100000, guid: 3e89b88bec525a14996d5340981598d9, type: 3}
 --- !u!114 &1640473036 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7674910112836864506, guid: 3e89b88bec525a14996d5340981598d9, type: 3}
   m_PrefabInstance: {fileID: 1640473035}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1332401232}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 78bc0d4d8ab41a04db079109c7423430, type: 3}
@@ -45728,6 +45737,18 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3144050026175171279, guid: 3e89b88bec525a14996d5340981598d9, type: 3}
   m_PrefabInstance: {fileID: 1640473035}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1640473041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332401232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 304d8cd5cb1dbb44faa1d5e0c6c3e5c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HideOnWebGL
 --- !u!1 &1644166034
 GameObject:
   m_ObjectHideFlags: 0

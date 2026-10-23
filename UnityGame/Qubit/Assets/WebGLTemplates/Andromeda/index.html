@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      /* The canvas fills whatever frame the host gives it, so itch.io's own fullscreen button scales the game. */
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #101B1D; }
+      #unity-canvas { display: block; width: 100%; height: 100%; background: #101B1D; outline: none; }
+      #loader {
+        position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: #101B1D; color: #A2B8A8; font-family: "Courier New", Courier, monospace; letter-spacing: 2px;
+      }
+      #loader .title { color: #D0A46D; font-size: 18px; margin-bottom: 6px; }
+      #loader .sub { color: #718780; font-size: 12px; margin-bottom: 22px; }
+      #loader .bar { width: 280px; height: 10px; border: 1px solid #344A47; padding: 2px; }
+      #loader .fill { width: 0%; height: 100%; background: #D0A46D; }
+      #loader .status { color: #718780; font-size: 12px; margin-top: 12px; }
+      #loader.error .status { color: #C87963; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loader">
+      <div class="title">ANDROMEDA RESEARCH STATION</div>
+      <div class="sub">MAIN TERMINAL // ESTABLISHING LINK</div>
+      <div class="bar"><div class="fill" id="loader-fill"></div></div>
+      <div class="status" id="loader-status">LOADING 0%</div>
+    </div>
+    <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loader = document.querySelector("#loader");
+      var fill = document.querySelector("#loader-fill");
+      var status = document.querySelector("#loader-status");
+
+      // Keyboard input needs focus inside the itch.io frame.
+      canvas.addEventListener("pointerdown", function () { canvas.focus(); });
+
+      createUnityInstance(canvas, {
+        arguments: [],
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+        workerUrl: "Build/{{{ WORKER_FILENAME }}}",
+#endif
+#if USE_WASM
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // A refused fullscreen request is harmless; don't let it stop the game with an alert.
+        errorHandler: function (err) {
+          var text = String(err && err.message ? err.message : err);
+          return /fullscreen/i.test(text);
+        },
+      }, function (progress) {
+        var pct = Math.round(progress * 100);
+        fill.style.width = pct + "%";
+        status.textContent = "LOADING " + pct + "%";
+      }).then(function () {
+        loader.style.display = "none";
+        canvas.focus();
+      }).catch(function (message) {
+        loader.className = "error";
+        status.textContent = "LINK FAILED: " + message;
+      });
+    </script>
+  </body>
+</html>
