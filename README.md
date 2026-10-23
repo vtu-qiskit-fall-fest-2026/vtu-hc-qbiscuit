@@ -5,8 +5,12 @@
 **VTU-QFF-HC-0191** &nbsp;|&nbsp; Tier: **Online**
 
 ### 🎮 [Play Andromeda Station: The Last Qubit on itch.io](https://sohampawar.itch.io/the-lost-qubit)
-#### 🎬 [Video Link](https://drive.google.com/drive/folders/1S922IWyR1JDmxjOhipljELpujHV0PnG0?usp=sharing)
-#### 📽️ [PPT Link](https://drive.google.com/drive/folders/1HhCSCOcXZPTdQXdaeEj4gAzlgiaEjIBj?usp=sharing)
+#### 🎬 [Video Link](https://youtu.be/0ai7rEpT8Fg) &nbsp;|&nbsp; 📽️ [PPT Link](https://drive.google.com/drive/folders/1HhCSCOcXZPTdQXdaeEj4gAzlgiaEjIBj?usp=sharing)
+<div align="center">
+  <a href="https://youtu.be/0ai7rEpT8Fg">
+    <img src="https://img.youtube.com/vi/0ai7rEpT8Fg/maxresdefault.jpg" width="600" alt="Watch the demo">
+  </a>
+</div>
 
 </div>
 
@@ -430,7 +434,7 @@ git pull --rebase       # update your branch on top of main
 - [x] Code pushed to `main` and the latest `main` builds successfully
 - [ ] Notebooks committed with **cleared outputs** (or use `nbstrip`)
 - [x] `README` includes a demo screenshot / video link
-- [ ] Short project summary submitted on the hackathon portal
+- [x] Short project summary submitted on the hackathon portal
 
 ---
 
