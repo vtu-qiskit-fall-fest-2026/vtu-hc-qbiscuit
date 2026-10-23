@@ -194,6 +194,11 @@ vtu-hc-qbiscuit/
 
 ▶ **Play in the browser:** [sohampawar.itch.io/the-lost-qubit](https://sohampawar.itch.io/the-lost-qubit)
 
+> [!WARNING]
+> **Browser note:** play in **Chrome or Edge** with ad blockers turned off for the game. Ad blockers and strict privacy browsers (e.g. Zen, Brave shields, uBlock Origin) can block the game's requests to the Qiskit backend at `andromeda-quantum-backend.onrender.com`, and the console will then show **QISKIT AER: UNREACHABLE** (the game falls back to a labelled offline stand-in). If that happens, allow `onrender.com` in your blocker or open the game in a private window and reload.
+>
+> The backend runs on Render's free tier and sleeps when idle: the first connection can take up to a minute while it wakes (the status shows **CONNECTING…**, then **ONLINE**).
+
 ### Story
 
 It is the polar night at an Antarctic research station. At **02:17 UTC** a mission specialist on a lunar spacecraft makes contact: the ship's latest control calculation, run on its experimental quantum processor, **failed its validation check**. As the researcher on duty, you must find the fault, correct it, find out *why* it happened, and send back a verified report.

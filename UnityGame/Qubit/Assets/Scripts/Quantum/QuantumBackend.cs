@@ -141,8 +141,11 @@ public class QuantumBackend : MonoBehaviour
             using (var www = UnityWebRequest.Get(HealthUrl))
             {
                 www.timeout = timeout;
+                float started = Time.realtimeSinceStartup;
                 yield return www.SendWebRequest();
-                SetStatus(www.result == UnityWebRequest.Result.Success ? Status.Online : Status.Unreachable);
+                bool ok = www.result == UnityWebRequest.Result.Success || www.responseCode == 200;
+                Debug.Log($"[QuantumBackend] health {(ok ? "OK" : "FAILED")}: {www.result} code={www.responseCode} error={www.error} after {Time.realtimeSinceStartup - started:0.0}s url={HealthUrl}");
+                SetStatus(ok ? Status.Online : Status.Unreachable);
             }
             yield return new WaitForSecondsRealtime(CurrentStatus == Status.Online ? healthInterval : retryInterval);
         }
@@ -153,6 +156,7 @@ public class QuantumBackend : MonoBehaviour
         if (next == CurrentStatus) return;
         var previous = CurrentStatus;
         CurrentStatus = next;
+        Debug.Log($"[QuantumBackend] status {previous} -> {next}");
         StatusChanged?.Invoke(previous, next);
     }
 
