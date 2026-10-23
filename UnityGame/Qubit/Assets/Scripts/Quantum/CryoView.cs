@@ -25,10 +25,33 @@ public class CryoView : MonoBehaviour
     [SerializeField] TMP_Text keysText;
     [SerializeField] string[] stageKeys =
     {
-        "[1-3] SCAN, THEN SELECT THE FAULTY QUBIT   [ESC] BACK",
-        "[←/→] HOLD TIME   [ENTER] FIRE 200 SHOTS   [ESC] BACK",
-        "[←/→] COOLING DIAL   [↑/↓] HOLD TIME   [ENTER] FIRE   [E] ENCODE   [ESC] BACK",
+        "[1-3] SCAN, THEN SELECT THE FAULTY QUBIT   [H] HOW TO   [ESC] BACK",
+        "[←/→] HOLD TIME   [ENTER] FIRE 200 SHOTS   [H] HOW TO   [ESC] BACK",
+        "[←/→] DIAL   [↑/↓] HOLD   [ENTER] FIRE   [E] ENCODE   [H] HOW TO   [ESC] BACK",
     };
+    [Tooltip("Each stage's HOW TO PLAY text. [H] or a click on its header collapses it to one line.")]
+    [SerializeField] TMP_Text[] guides = new TMP_Text[3];
+    [SerializeField] bool guidesOpen = true;
+    [Tooltip("Elements that take over the guide's space when it collapses. Their open layout is read from the scene.")]
+    [SerializeField] List<GuideSlot> guideSlots = new List<GuideSlot>();
+    [SerializeField] float guideTweenSeconds = 0.25f;
+
+    [System.Serializable]
+    public class GuideSlot
+    {
+        public RectTransform target;
+        [Tooltip("Anchored position while HOW TO PLAY is collapsed.")]
+        public Vector2 collapsedPosition;
+        [Tooltip("Size while HOW TO PLAY is collapsed.")]
+        public Vector2 collapsedSize;
+        [Tooltip("Font size while collapsed; 0 keeps the open size.")]
+        public float collapsedFontSize;
+        [Tooltip("Uniform scale while collapsed, for grouped content like the chart; 0 keeps the open scale.")]
+        public float collapsedScale;
+        [System.NonSerialized] public Vector2 openPosition, openSize;
+        [System.NonSerialized] public float openFontSize, openScale;
+        [System.NonSerialized] public TMP_Text text;
+    }
     [SerializeField] GameObject[] stagePanels = new GameObject[3];
 
     [Header("Stage 1: measure")]
@@ -80,6 +103,11 @@ public class CryoView : MonoBehaviour
     [SerializeField] Color alert = new Color32(0xc8, 0x79, 0x63, 0xff);
     [SerializeField] Color dim = new Color32(0x71, 0x87, 0x80, 0xff);
 
+    const string GuideHeader = "HOW TO PLAY";
+    string[] guideBodies;
+    float guideBlend = 1f;   // 1 = guide open, 0 = collapsed
+    Coroutine guideTween;
+
     public UnityEvent onClose = new UnityEvent();
     public UnityEvent onCompleted = new UnityEvent();
 
@@ -111,12 +139,98 @@ public class CryoView : MonoBehaviour
         coolHold.onValueChanged.AddListener(_ => RefreshCool());
         dial.onChanged.AddListener(_ => RefreshCool());
         dial.onHitLimit.AddListener(() => Status(stage3Status, "Power limit reached. The cryostat can't draw more than 85%."));
+
+        // The scene holds each guide's full text; keep what follows the header so it can be shown again.
+        guideBodies = new string[guides.Length];
+        for (int i = 0; i < guides.Length; i++)
+        {
+            if (guides[i] == null) continue;
+            string t = guides[i].text;
+            int h = t.IndexOf(GuideHeader);
+            int close = h >= 0 ? t.IndexOf("</color>", h) : -1;
+            guideBodies[i] = close >= 0 ? t.Substring(close + "</color>".Length) : t;
+            var clicks = guides[i].GetComponent<TMPLinkClicks>();
+            if (clicks != null) clicks.onLinkClicked.AddListener(_ => ToggleGuides());
+        }
+        foreach (var slot in guideSlots)
+        {
+            if (slot.target == null) continue;
+            slot.openPosition = slot.target.anchoredPosition;
+            slot.openSize = slot.target.sizeDelta;
+            slot.openScale = slot.target.localScale.x;
+            slot.text = slot.target.GetComponent<TMP_Text>();
+            if (slot.text != null) slot.openFontSize = slot.text.fontSize;
+        }
+        guideBlend = guidesOpen ? 1f : 0f;
+        ApplyGuideLayout();
+        RefreshGuides(guidesOpen);
+    }
+
+    public void ToggleGuides()
+    {
+        guidesOpen = !guidesOpen;
+        Sfx.Play(guidesOpen ? "select" : "back");
+        if (guideTween != null) StopCoroutine(guideTween);
+        guideTween = StartCoroutine(TweenGuides());
+    }
+
+    IEnumerator TweenGuides()
+    {
+        // Collapsing hides the body first so it never overlaps the growing content; expanding shows it once there is room.
+        if (!guidesOpen) RefreshGuides(false);
+        float from = guideBlend, to = guidesOpen ? 1f : 0f;
+        for (float t = 0f; t < guideTweenSeconds; t += Time.unscaledDeltaTime)
+        {
+            float k = Mathf.SmoothStep(0f, 1f, t / guideTweenSeconds);
+            guideBlend = Mathf.Lerp(from, to, k);
+            ApplyGuideLayout();
+            yield return null;
+        }
+        guideBlend = to;
+        ApplyGuideLayout();
+        RefreshGuides(guidesOpen);
+        guideTween = null;
+    }
+
+    void ApplyGuideLayout()
+    {
+        foreach (var slot in guideSlots)
+        {
+            if (slot.target == null) continue;
+            slot.target.anchoredPosition = Vector2.Lerp(slot.collapsedPosition, slot.openPosition, guideBlend);
+            slot.target.sizeDelta = Vector2.Lerp(slot.collapsedSize, slot.openSize, guideBlend);
+            if (slot.text != null && slot.collapsedFontSize > 0f)
+                slot.text.fontSize = Mathf.Lerp(slot.collapsedFontSize, slot.openFontSize, guideBlend);
+            if (slot.collapsedScale > 0f)
+            {
+                float sc = Mathf.Lerp(slot.collapsedScale, slot.openScale, guideBlend);
+                slot.target.localScale = new Vector3(sc, sc, 1f);
+            }
+        }
+    }
+
+    void RefreshGuides(bool showBody)
+    {
+        for (int i = 0; i < guides.Length; i++)
+        {
+            if (guides[i] == null) continue;
+            // Open, the key bar already shows [H]; collapsed, the hint stays beside the header.
+            string header = showBody
+                ? $"<link=\"guide\"><color={Hex(amber)}>[-] {GuideHeader}</color></link>"
+                : $"<link=\"guide\"><color={Hex(amber)}>[+] {GuideHeader}</color>  <color={Hex(dim)}>[H] SHOW</color></link>";
+            guides[i].text = showBody ? header + guideBodies[i] : header;
+        }
     }
 
     public void Open()
     {
         gameObject.SetActive(true);
         openedFrame = Time.frameCount;
+        // A tween cut short by closing the panel snaps to its end state.
+        if (guideTween != null) { StopCoroutine(guideTween); guideTween = null; }
+        guideBlend = guidesOpen ? 1f : 0f;
+        ApplyGuideLayout();
+        RefreshGuides(guidesOpen);
         ShowStage(stage);
     }
 
@@ -371,6 +485,7 @@ public class CryoView : MonoBehaviour
         bool enter = kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.fKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame;
 
         if (kb.escapeKey.wasPressedThisFrame) { onClose.Invoke(); return; }
+        if (kb.hKey.wasPressedThisFrame) { ToggleGuides(); return; }
         if (stage == 0)
         {
             if (kb.digit1Key.wasPressedThisFrame) CardPressed(0);
