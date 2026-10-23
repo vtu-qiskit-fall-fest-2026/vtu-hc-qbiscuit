@@ -315,6 +315,13 @@ public class DiagnosticsView : MonoBehaviour
 
         SetButtons(!busy);
         codeText.text = Code();
+        // Keep the circuit that matters next in view: diagnosis first, then verification.
+        var scroll = codeView != null ? codeView.GetComponent<ScrollRect>() : null;
+        if (scroll != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scroll.content);
+            scroll.verticalNormalizedPosition = syndrome == null ? 1f : 0f;
+        }
     }
 
     void SetButtons(bool on)
@@ -327,21 +334,42 @@ public class DiagnosticsView : MonoBehaviour
 
     string Code()
     {
-        string c = Hex(dim), t = Hex(teal), f = Hex(faint);
+        // Mirrors Andromeda_Backend: diagnosis.py and verification.py run two separate
+        // circuits on AerSimulator with shots=1 (circuit.py), reversing Qiskit's bit order.
+        string c = Hex(dim), t = Hex(teal), f = Hex(faint), h = Hex(bright);
+        // One code line with its comment aligned in a column.
+        string Line(string code, string comment, string colour = null)
+        {
+            string body = code.PadRight(37);
+            if (colour != null) body = $"<color={colour}>{code}</color>" + new string(' ', Mathf.Max(1, 37 - code.Length));
+            return comment == null ? body.TrimEnd() + "\n" : $"{body}<color={c}># {comment}</color>\n";
+        }
+        string Fault(string circuit, string note) =>
+            !verified ? Line($"# {circuit}.x(?)", "fault injected by scenario", c)
+            : errorQubit >= 0 ? Line($"{circuit}.x({errorQubit})", note) : Line("# no fault", "none was injected", c);
+
         var sb = new StringBuilder();
-        sb.Append($"data, anc = QuantumRegister(3, \"d\"), QuantumRegister(2, \"a\")\n");
-        sb.Append($"syn, out  = ClassicalRegister(2, \"syn\"), ClassicalRegister(3, \"out\")\n");
-        sb.Append($"qc = QuantumCircuit(data, anc, syn, out)   <color={c}># all start in |0⟩</color>\n");
-        if (verified && errorQubit >= 0) sb.Append($"qc.x(data[{errorQubit}])                          <color={c}># fault (revealed)</color>\n");
-        else sb.Append($"<color={c}># qc.x(data[?])                        # fault injected by scenario</color>\n");
-        sb.Append($"qc.cx(data[0], anc[0]); qc.cx(data[1], anc[0])  <color={c}># A = q0 ⊕ q1</color>\n");
-        sb.Append($"qc.cx(data[1], anc[1]); qc.cx(data[2], anc[1])  <color={c}># B = q1 ⊕ q2</color>\n");
-        sb.Append($"qc.measure(anc, syn)                       <color={c}># syndrome {(syndrome ?? "")}</color>\n");
-        if (syndrome == null) sb.Append($"<color={f}># FIX: run the diagnosis first</color>\n");
-        else if (correction < 0) sb.Append($"<color={t}># no correction</color>                       <color={c}># your fix</color>\n");
-        else sb.Append($"<color={t}>qc.x(data[{correction}])</color>                          <color={c}># your fix</color>\n");
-        sb.Append($"qc.measure(data, out)                      <color={c}># verify: expect 000</color>\n");
-        sb.Append($"<color={f}>AerSimulator().run(transpile(qc, sim), shots=256)</color>");
+        sb.Append($"<color={h}># 1. DIAGNOSIS CIRCUIT   [R] RUN DIAGNOSIS</color>\n");
+        sb.Append(Line("diag = QuantumCircuit(5, 2)", "q0-q2 data, q3 = A, q4 = B"));
+        sb.Append(Fault("diag", "fault (revealed)"));
+        sb.Append(Line("diag.cx(0, 3); diag.cx(1, 3)", "A = q0 ⊕ q1"));
+        sb.Append(Line("diag.cx(1, 4); diag.cx(2, 4)", "B = q1 ⊕ q2"));
+        sb.Append(Line("diag.measure(3, 0); diag.measure(4, 1)", null));
+        sb.Append(Line("syndrome = run(diag)[::-1]", syndrome != null ? "-> " + syndrome : "not run yet"));
+        sb.Append('\n');
+
+        sb.Append($"<color={h}># 2. VERIFICATION CIRCUIT   [V] RUN CORRECTED CIRCUIT</color>\n");
+        sb.Append(Line("ver = QuantumCircuit(3, 3)", "data qubits only"));
+        sb.Append(Fault("ver", "same fault"));
+        if (syndrome == null) sb.Append(Line("# your fix goes here", "after the diagnosis", f));
+        else if (correction < 0) sb.Append(Line("# no correction", "your fix", t));
+        else sb.Append(Line($"ver.x({correction})", "your fix", t));
+        sb.Append(Line("ver.measure([0, 1, 2], [0, 1, 2])", null));
+        string outcome = finalData != null ? $"-> {finalData}{(verified ? ", verified" : ", failed")}" : "expect 000";
+        sb.Append(Line("verified = run(ver)[::-1] == \"000\"", outcome));
+        sb.Append('\n');
+
+        sb.Append($"<color={f}># run(qc) = AerSimulator().run(transpile(qc, sim), shots=1)</color>");
         return sb.ToString();
     }
 

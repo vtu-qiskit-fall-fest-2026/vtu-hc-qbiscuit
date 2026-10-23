@@ -86,13 +86,13 @@ MonoBehaviour:
     bench: 3
     qiskit: 'sim = AerSimulator()
 
-      counts = sim.run(qc, shots=256).result().get_counts()
+      counts = sim.run(qc, shots=1   # one shot:
+      the circuit is deterministic).result().get_counts()
 
-      key
-      = max(counts, key=counts.get)
+      key = max(counts,
+      key=counts.get)
 
-      syndrome = key[::-1]   # Qiskit prints
-      bits right-to-left'
+      syndrome = key[::-1]   # Qiskit prints bits right-to-left'
   guides:
   - label: Efficient simulation of stabilizer circuits
     url: https://quantum.cloud.ibm.com/docs/en/guides/simulate-stabilizer-circuits

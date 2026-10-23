@@ -37,10 +37,10 @@ MonoBehaviour:
       sim
       = AerSimulator()
 
-      job = sim.run(transpile(qc, sim), shots=256)
+      job = sim.run(transpile(qc, sim), shots=1   # one shot:
+      the circuit is deterministic)
 
-      counts
-      = job.result().get_counts()'
+      counts = job.result().get_counts()'
   - title: 'Field notes: before you proceed'
     tag: 0
     body: "<color=#ffe2a8><b>\u258C FIELD NOTES</b>\n<indent=0.9em>\u2022 The X gate
