@@ -64,6 +64,8 @@ public class IntroController : MonoBehaviour
         var blink = prompt.GetComponent<BlinkCanvasGroup>();
         if (blink != null) blink.enabled = false;
         prompt.alpha = 0f;
+        Sfx.Play("power_on");
+        Sfx.Ambience(true);
 
         // CRT power-on: a bright horizontal line, then the picture opens vertically.
         var flash = crtPowerFlash.rectTransform;

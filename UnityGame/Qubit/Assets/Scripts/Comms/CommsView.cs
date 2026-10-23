@@ -92,10 +92,12 @@ public class CommsView : MonoBehaviour
             if (line.speaker == DialogueScript.Speaker.You)
             {
                 yield return WaitForEnter("[ENTER] TRANSMIT REPLY");
+                Sfx.Play("transmit");
                 yield return Signal("TRANSMITTING", transmitTime);
             }
             else if (line.speaker == DialogueScript.Speaker.MissionSpecialist)
             {
+                Sfx.Play("static");
                 yield return Signal("RECEIVING", receiveTime);
             }
 
@@ -109,6 +111,7 @@ public class CommsView : MonoBehaviour
             {
                 if (skip) { shown = line.text.Length; skip = false; }
                 Render(header + Body(line, line.text.Substring(0, shown)) + "<color=" + textColour + ">_</color>");
+                if (shown % 3 == 1 && shown < line.text.Length && line.text[shown - 1] != ' ') Sfx.Play("key", 0.5f);
                 if (shown < line.text.Length) yield return new WaitForSecondsRealtime(1f / speed);
             }
             log.Append(header).Append(Body(line, line.text)).Append("\n\n");

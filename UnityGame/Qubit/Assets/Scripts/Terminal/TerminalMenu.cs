@@ -37,7 +37,7 @@ public class TerminalMenu : MonoBehaviour
         if (i < 0 || i == index) return;
         index = i;
         Refresh();
-        if (blip != null) blip.Play();
+        Sfx.Play("move");
     }
 
     void Update()
@@ -47,21 +47,22 @@ public class TerminalMenu : MonoBehaviour
 
         if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame) Move(-1);
         else if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame) Move(1);
-        else if (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame) items[index].onLeft.Invoke();
-        else if (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame) items[index].onRight.Invoke();
+        else if (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame) { Sfx.Play("move"); items[index].onLeft.Invoke(); }
+        else if (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame) { Sfx.Play("move"); items[index].onRight.Invoke(); }
         else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame)
         {
             var item = items[index];
+            Sfx.Play("select");
             if (item.IsOption) item.onRight.Invoke(); else item.onSubmit.Invoke();
         }
-        else if (kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame) onBack.Invoke();
+        else if (kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame) { Sfx.Play("back"); onBack.Invoke(); }
     }
 
     void Move(int delta)
     {
         index = (index + delta + items.Count) % items.Count;
         Refresh();
-        if (blip != null) blip.Play();
+        Sfx.Play("move");
     }
 
     public void Refresh()

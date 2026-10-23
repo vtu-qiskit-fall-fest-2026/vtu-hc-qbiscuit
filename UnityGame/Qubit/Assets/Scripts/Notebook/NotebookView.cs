@@ -136,6 +136,7 @@ public class NotebookView : MonoBehaviour
         if (sections.Count == 0) return;
         sectionIndex = (i + sections.Count) % sections.Count;
         entryIndexValue = 0;
+        Sfx.Play("move");
         tab = Read;
         Refresh(true);
     }
@@ -146,6 +147,7 @@ public class NotebookView : MonoBehaviour
         int next = Mathf.Clamp(i, 0, Section.entries.Count - 1);
         if (next == entryIndexValue) return;
         entryIndexValue = next;
+        Sfx.Play("move");
         tab = Read;
         Refresh(true);
     }
@@ -153,6 +155,7 @@ public class NotebookView : MonoBehaviour
     public void SelectTab(int i)
     {
         if (!TabAvailable(i)) return;
+        if (i != tab) Sfx.Play("select");
         tab = i;
         ShowTab();
     }

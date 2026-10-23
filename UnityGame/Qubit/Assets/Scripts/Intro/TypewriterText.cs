@@ -9,6 +9,9 @@ public class TypewriterText : MonoBehaviour
     [SerializeField] float charactersPerSecond = 40f;
     [SerializeField] float lineBreakPause = 0.25f;
     [SerializeField] bool playOnEnable = true;
+    [Tooltip("Play a soft key click every few characters.")]
+    [SerializeField] bool keyClicks = true;
+    [SerializeField] int clickEvery = 3;
 
     TMP_Text text;
 
@@ -55,7 +58,9 @@ public class TypewriterText : MonoBehaviour
         for (int i = 0; i < total; i++)
         {
             text.maxVisibleCharacters = i + 1;
-            bool newLine = text.textInfo.characterInfo[i].character == '\n';
+            char ch = text.textInfo.characterInfo[i].character;
+            bool newLine = ch == '\n';
+            if (keyClicks && !char.IsWhiteSpace(ch) && i % clickEvery == 0) Sfx.Play("key", 0.6f);
             yield return new WaitForSecondsRealtime(newLine ? lineBreakPause : delay);
         }
         IsTyping = false;

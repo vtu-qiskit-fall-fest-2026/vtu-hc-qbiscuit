@@ -47,6 +47,7 @@ public class BackendToast : MonoBehaviour
         title.color = colour;
         title.text = heading;
         body.text = message;
+        Sfx.Play(colour == online ? "toast" : "failed");
         StopAllCoroutines();
         StartCoroutine(Run());
     }

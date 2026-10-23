@@ -95,6 +95,7 @@ public class CRTDisplay : MonoBehaviour
 
     IEnumerator Blend(Look from, Look to, float duration)
     {
+        Sfx.Play("degauss");
         // Degauss: a short wobble and brightness surge, like the monitor re-syncing.
         for (float t = 0f; t < degaussTime; t += Time.unscaledDeltaTime)
         {

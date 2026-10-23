@@ -17,6 +17,8 @@ public class DiagnosticsView : MonoBehaviour
     [SerializeField] QuantumBackend backend;
     [Tooltip("Data qubit the scenario flips (0, 1 or 2). -1 picks one at random each session. 3 means no error.")]
     [SerializeField] int scenarioErrorQubit = -1;
+    [Tooltip("Shortest time a circuit run is shown as running, even if the server answers instantly.")]
+    [SerializeField] float minRunSeconds = 0.8f;
 
     [Header("Circuit board")]
     [SerializeField] Button[] fixSlots = new Button[3];
@@ -183,6 +185,7 @@ public class DiagnosticsView : MonoBehaviour
         if (syndrome == null) { Status("Run the diagnosis first. The FIX column unlocks once the syndrome is known."); return; }
         correction = correction == qubit ? -1 : qubit;
         resultText.text = "";
+        Sfx.Play(correction < 0 ? "back" : "select");
         Refresh();
     }
 
@@ -190,6 +193,7 @@ public class DiagnosticsView : MonoBehaviour
     {
         if (busy || verified || syndrome == null) return;
         correction = -1;
+        Sfx.Play("back");
         Refresh();
     }
 
@@ -209,8 +213,12 @@ public class DiagnosticsView : MonoBehaviour
         SetButtons(false);
         resultText.text = "";
         var scan = StartCoroutine(Scan(label));
+        Sfx.Play("compute");
+        float started = Time.unscaledTime;
         QuantumResponse response = null;
         yield return backend.Send(request, r => response = r);
+        // A local server answers instantly; keep the run visible long enough to register.
+        while (Time.unscaledTime - started < minRunSeconds) yield return null;
         StopCoroutine(scan);
         if (scanBar != null) scanBar.gameObject.SetActive(false);
         busy = false;
@@ -238,6 +246,7 @@ public class DiagnosticsView : MonoBehaviour
         if (!Valid(r) || !IsBits(r.syndrome, 2)) { BackendError(r, "an invalid syndrome"); return; }
         syndrome = r.syndrome;
         finalData = null;
+        Sfx.Play("lamp");
         Status($"SYNDROME {syndrome} MEASURED.\nPlace an X in the FIX column on the qubit it points to (none for 00), then run the corrected circuit.{SourceNote(r)}");
     }
 
@@ -252,6 +261,7 @@ public class DiagnosticsView : MonoBehaviour
             verified = true;
             VerifiedBy = r.source == QuantumBackend.StandInLabel ? "OFFLINE STAND-IN" : "QISKIT AER";
             resultText.text = $"<color={Hex(teal)}>VERIFIED</color>";
+            Sfx.Play("verified");
             Status($"Encoded state restored: the data reads {finalData}. MISSION REPORT is ready to transmit.{SourceNote(r)}");
             onVerified.Invoke();
         }
@@ -261,6 +271,7 @@ public class DiagnosticsView : MonoBehaviour
             foreach (char c in finalData) if (c == '1') wrong++;
             string how = wrong == 1 ? "One data bit is still flipped." : $"{wrong} data bits are flipped.";
             resultText.text = $"<color={Hex(alert)}>VERIFICATION FAILED</color>";
+            Sfx.Play("failed");
             Status($"Data reads {finalData}, not 000. {how}\nRe-read the syndrome table [N], move the X and run again.{SourceNote(r)}");
         }
     }
@@ -270,6 +281,7 @@ public class DiagnosticsView : MonoBehaviour
     void BackendError(QuantumResponse r, string what)
     {
         resultText.text = $"<color={Hex(alert)}>BACKEND ERROR</color>";
+        Sfx.Play("failed");
         string reason = r == null ? "No reply." : !r.success ? r.message : $"The backend returned {what}.";
         Status($"{reason}\nNothing was verified. Check the backend connection and try again.");
     }

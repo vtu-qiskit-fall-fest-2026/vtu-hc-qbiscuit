@@ -78,12 +78,14 @@ public class BootSequence : MonoBehaviour
             yield return null;
         }
         memoryText.text = "MEMORY TEST : " + memoryKilobytes + "K OK";
+        Sfx.Play("post_beep");
         yield return new WaitForSecondsRealtime(0.3f);
 
         foreach (var line in postLines)
         {
             sb.AppendLine(line);
             postText.text = sb.ToString();
+            if (line.Contains("DRIVES")) Sfx.Play("disk");
             yield return new WaitForSecondsRealtime(string.IsNullOrWhiteSpace(line) ? postLineDelay * 0.5f : postLineDelay);
         }
         yield return new WaitForSecondsRealtime(postHoldTime);
@@ -97,6 +99,7 @@ public class BootSequence : MonoBehaviour
     {
         Show(splashPanel);
         foreach (var s in loadingSegments) s.color = segmentOff;
+        Sfx.Play("disk");
 
         int lit = 0;
         for (float t = 0f; t < splashTime; t += Time.unscaledDeltaTime)
@@ -111,6 +114,7 @@ public class BootSequence : MonoBehaviour
             yield return null;
         }
         foreach (var s in loadingSegments) s.color = segmentOn;
+        Sfx.Play("select");
         yield return new WaitForSecondsRealtime(0.6f);
         splashPanel.SetActive(false);
         yield return new WaitForSecondsRealtime(0.3f);

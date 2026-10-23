@@ -34,6 +34,7 @@ public class EndingView : MonoBehaviour
         yield return null;
         while (logText.IsTyping) yield return null;
         yield return new WaitForSecondsRealtime(closingDelay);
+        Sfx.Play("verified", 0.7f);
         // The closing line fades up in steps, like a phosphor warming.
         for (int i = 1; i <= 6; i++)
         {
