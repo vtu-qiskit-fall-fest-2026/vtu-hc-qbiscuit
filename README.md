@@ -4,6 +4,8 @@
 
 **VTU-QFF-HC-0191** &nbsp;|&nbsp; Tier: **Online**
 
+### 🎮 [Play Andromeda Station: The Last Qubit on itch.io](https://sohampawar.itch.io/the-lost-qubit)
+
 </div>
 
 ---
@@ -18,6 +20,8 @@
 | **Repository** | [vtu-hc-qbiscuit](https://github.com/vtu-qiskit-fall-fest-2026/vtu-hc-qbiscuit.git) |
 | **Organisation** | [vtu-qiskit-fall-fest-2026](https://github.com/vtu-qiskit-fall-fest-2026) |
 | **Event** | VTU-QFF Hackathon — VTU-Qiskit Fall Fest 2026 |
+| **Play (WebGL)** | [sohampawar.itch.io/the-lost-qubit](https://sohampawar.itch.io/the-lost-qubit) |
+| **Quantum backend** | [andromeda-quantum-backend.onrender.com](https://andromeda-quantum-backend.onrender.com/health) (Qiskit Aer on Render) |
 
 </div>
 
@@ -125,22 +129,46 @@ flowchart LR
 
 ```text
 vtu-hc-qbiscuit/
-├── README.md              # This file
-├── requirements.txt       # Python dependencies
-├── pyproject.toml         # Project metadata (optional)
-├── .gitignore
-├── notebooks/             # Jupyter notebooks for experiments
-│   └── exploration.ipynb
-├── src/
-│   ├── __init__.py
-│   ├── circuit.py         # Quantum circuit construction
-│   ├── optimizer.py       # Optimization loop
-│   └── main.py            # Entry point
-├── data/                  # Datasets (use Git LFS for large files)
-├── tests/                 # Unit tests
-│   └── test_circuit.py
-└── docs/                  # Notes, diagrams, reports
+├── README.md                        # This file
+├── render.yaml                      # Render Blueprint for the quantum backend
+├── Andromeda_Backend/               # FastAPI + Qiskit Aer service (deployed on Render)
+│   ├── api_server.py                # HTTP API: GET /health, POST /run (CORS for the WebGL build)
+│   ├── requirements.txt             # Backend dependencies (Python 3.12)
+│   └── quantum_backend/
+│       ├── api.py                   # Routes "correct", "simulate" and "noisy" requests
+│       ├── circuit.py               # Runs circuits on the Qiskit AerSimulator
+│       ├── diagnosis.py             # Diagnostic circuit: encode, inject fault, measure the syndrome
+│       ├── verification.py          # Verification circuit: apply the player's fix, check the data
+│       ├── compiler.py              # Compiles and simulates player-built circuits ("simulate")
+│       └── noise.py                 # Thermal relaxation (T1) model for the cryo puzzle
+└── UnityGame/
+    ├── Blender/
+    │   └── research_room.blend      # Pixel-art research room rendered for the intro
+    └── Qubit/                       # Unity 6 project (URP, Input System, uGUI + TextMeshPro)
+        └── Assets/
+            ├── Scenes/
+            │   └── Intro.unity      # The whole game: room → CRT boot → menu → console → ending
+            ├── Scripts/
+            │   ├── Intro/           # Room view, power-on, typewriter text, blinking prompt
+            │   ├── Terminal/        # CRT display, boot sequence, menus, settings, console shell
+            │   ├── Comms/           # Comms link dialogue, mission report, ending
+            │   ├── Notebook/        # Research notebook, link clicks, Benches/ (hands-on mini labs)
+            │   ├── Quantum/         # Backend client, Diagnostics console, Cryo Control, dial
+            │   └── Audio/           # Sound bank, ambience, music crossfade
+            ├── Data/
+            │   ├── Notebook/        # 9 notebook sections (ScriptableObjects, 27 entries)
+            │   └── Dialogue/        # Comms transmissions
+            ├── Prefabs/UI/          # Terminal menu item and option row
+            ├── Shaders/             # UI_CRT shader (curvature, scanlines, phosphor glow)
+            ├── Materials/           # CRT material
+            ├── Fonts/               # VT323, IBM Plex Mono, Noto Sans Math (SDF)
+            ├── Art/                 # Room and UI art
+            ├── Audio/               # Sound effects and Music/ (two looping tracks)
+            └── StreamingAssets/
+                └── ResearchNotebook.pdf   # Full notebook, opened from the DOCS tab
 ```
+
+**How the pieces talk:** the WebGL build on itch.io sends each circuit request to `https://andromeda-quantum-backend.onrender.com/run`, which runs it on Qiskit Aer and returns the result. In the Unity editor the game uses a local server at `http://127.0.0.1:8000/run` instead. If the hosted server can't be reached, the game falls back to a clearly labelled offline stand-in.
 
 ---
 
