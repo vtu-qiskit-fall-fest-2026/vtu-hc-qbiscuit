@@ -126,12 +126,18 @@ flowchart LR
 
 | Layer | Technology |
 | :--- | :--- |
-| Language | Python 3.11+ |
-| Quantum SDK | Qiskit `>=1.0`, Qiskit Aer, Qiskit Runtime |
-| Optimisation | Qiskit Optimization / COBYLA / SPSA |
-| Simulation | AerSimulator (statevector / noisemodel) |
-| Environment | JupyterLab / VS Code, `venv` |
-| Version control | Git + GitHub |
+| Game Development | Unity |
+| Languages | C#, Python |
+| Quantum SDK | Qiskit |
+| Circuit Compilation | Custom Python Circuit Compiler |
+| Transpilation | Qiskit `transpile()` |
+| Simulation | Qiskit Aer, `AerSimulator` |
+| Noise Modelling | Qiskit Aer Noise Models |
+| Error Correction | Three-Qubit Repetition Code, Syndrome Measurements |
+| Backend API | FastAPI, Uvicorn |
+| Data Exchange | JSON |
+| Environment | VS Code, Python `venv` |
+| Version Control | Git + GitHub |
 
 ---
 
