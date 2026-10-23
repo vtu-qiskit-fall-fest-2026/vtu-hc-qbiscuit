@@ -25,7 +25,7 @@ public class IntroController : MonoBehaviour
 
     [Header("Look")]
     [SerializeField] Color flashColor = Color.white;
-    [SerializeField] Color screenOnColor = new Color(1f, 0.7f, 0.25f, 1f);
+    [SerializeField] Color screenOnColor = new Color(0.816f, 0.643f, 0.427f, 1f);
 
     [Header("Timing (seconds)")]
     [SerializeField] float lineTime = 0.12f;

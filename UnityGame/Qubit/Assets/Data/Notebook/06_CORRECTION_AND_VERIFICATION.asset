@@ -20,7 +20,7 @@ MonoBehaviour:
     tag: 1
     body: "Once the syndrome points to a flipped qubit, apply an <b>X gate</b> to
       that data qubit. For example, if q1 has flipped from 0 to 1, applying X to
-      q1 flips it back to 0.\n\n<color=#ff8a5c><b>\u258C LIMITATION</b>\n<indent=0.9em>If
+      q1 flips it back to 0.\n\n<color=#C87963><b>\u258C LIMITATION</b>\n<indent=0.9em>If
       the syndrome is 00, apply <b>no</b> correction. An X on a healthy qubit would
       <b>create</b> an error.</indent></color>"
     bench: 1
@@ -32,10 +32,10 @@ MonoBehaviour:
       successful repair means that measuring the three data qubits gives 000. The
       console reports success only if the simulation's actual result passes this
       rule.\n\nA wrong correction should fail verification, letting you re-read the
-      syndrome and try again:\n\n<color=#ffe2a8><b>ERROR  SYNDROME  YOUR FIX   DATA 
+      syndrome and try again:\n\n<color=#E3C58F><b>ERROR  SYNDROME  YOUR FIX   DATA 
       RESULT</b></color>\n q1      11      X on q1    000   Verified\n q1      11     
       X on q0    110   Fails: two bits wrong\n none    00      X on q2    001   Fails:
-      you made an error\n q2      01      none       001   Fails: error remains\n\n<color=#c08a3e><b>\u258C
+      you made an error\n q2      01      none       001   Fails: error remains\n\n<color=#B09A74><b>\u258C
       RESEARCH NOTE</b>\n<indent=0.9em>Checking for 000 works here because the starting
       state is known. In a real experiment the encoded state is usually unknown,
       so verification uses other methods, such as repeating the syndrome measurement.</indent></color>"
@@ -56,7 +56,7 @@ MonoBehaviour:
       value has silently changed from |0_L\u27E9 to |1_L\u27E9.\n\u2022 <b>It is
       a teaching model.</b> Real quantum computers use larger codes (such as Shor's
       nine-qubit code or the surface code) that handle both bit-flip and phase-flip
-      errors, repeat the checks continually, and allow for faulty measurements.\n\n<color=#ff8a5c><b>\u258C
+      errors, repeat the checks continually, and allow for faulty measurements.\n\n<color=#C87963><b>\u258C
       LIMITATION</b>\n<indent=0.9em>A successful verification shows how <b>this</b>
       simulated circuit behaves. It does not prove that every kind of quantum error
       has been eliminated.</indent></color>"

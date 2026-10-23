@@ -23,7 +23,7 @@ MonoBehaviour:
       circuit model, it is an unintended X gate. In real hardware, causes include
       stray electromagnetic noise, heat and imperfect control pulses.\n\n<b>Example.</b>
       The system expects a data qubit to stay in |0\u27E9, but an error changes it
-      to |1\u27E9. The qubit now differs from the state the computation expects.\n\n<color=#c08a3e><b>\u258C
+      to |1\u27E9. The qubit now differs from the state the computation expects.\n\n<color=#B09A74><b>\u258C
       RESEARCH NOTE</b>\n<indent=0.9em>This exercise considers a <b>single</b> bit-flip
       error. Quantum systems can suffer other kinds of errors too (see entry 20).</indent></color>"
     bench: 1
@@ -44,7 +44,7 @@ MonoBehaviour:
       protected quantum information, that is exactly what we cannot afford.\n\nThe
       solution is to ask only about <b>relationships</b>: \"do q0 and q1 agree?\"
       rather than \"what is q0?\" The answer to a relationship question does not
-      depend on the hidden amplitudes, so the protected information survives.\n\n<color=#ffe2a8><b>\u258C
+      depend on the hidden amplitudes, so the protected information survives.\n\n<color=#E3C58F><b>\u258C
       INTUITION</b>\n<indent=0.9em>Compare a proofreader who checks that two copies
       of a document match <b>without reading what it says</b>. They can spot a mismatch
       without learning, or disturbing, the content.</indent></color>"
@@ -60,7 +60,7 @@ MonoBehaviour:
       <b>Encode:</b> spread one piece of information across several qubits.\n\u2022
       <b>Detect:</b> measure carefully chosen checks to get the syndrome.\n\u2022
       <b>Correct:</b> apply the operation that undoes the diagnosed error.\n\u2022
-      <b>Verify:</b> confirm that the result is what it should be.\n\n<color=#ffe2a8><b>\u258C
+      <b>Verify:</b> confirm that the result is what it should be.\n\n<color=#E3C58F><b>\u258C
       YOUR OBJECTIVE</b>\n<indent=0.9em>Identify the error from the diagnostic results,
       apply the appropriate correction, and verify the outcome.</indent></color>"
     bench: 0

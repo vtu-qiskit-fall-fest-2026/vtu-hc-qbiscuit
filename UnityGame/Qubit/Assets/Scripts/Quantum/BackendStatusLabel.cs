@@ -8,9 +8,9 @@ public class BackendStatusLabel : MonoBehaviour
     [SerializeField] QuantumBackend backend;
     [Tooltip("{0} is replaced with the status, e.g. ONLINE.")]
     [SerializeField] string format = "QISKIT AER: {0}";
-    [SerializeField] Color online = new Color32(0x3f, 0xe0, 0xb5, 0xff);
-    [SerializeField] Color connecting = new Color32(0xa8, 0x70, 0x1f, 0xff);
-    [SerializeField] Color offline = new Color32(0xff, 0x6a, 0x4a, 0xff);
+    [SerializeField] Color online = new Color32(0x8f, 0xbc, 0xa0, 0xff);
+    [SerializeField] Color connecting = new Color32(0x71, 0x87, 0x80, 0xff);
+    [SerializeField] Color offline = new Color32(0xc8, 0x79, 0x63, 0xff);
 
     TMP_Text text;
 

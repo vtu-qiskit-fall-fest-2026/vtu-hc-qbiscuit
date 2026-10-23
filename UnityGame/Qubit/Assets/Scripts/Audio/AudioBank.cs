@@ -29,6 +29,15 @@ public class AudioBank : MonoBehaviour
 
     [SerializeField] int oneShotVoices = 6;
 
+    [Header("Background music (looping, crossfaded)")]
+    [SerializeField] AudioClip calmTrack;
+    [SerializeField] AudioClip tenseTrack;
+    [SerializeField] float musicVolume = 0.22f;
+    [SerializeField] float musicFadeSeconds = 2f;
+
+    AudioSource musicA, musicB;
+    bool aIsActive = true;
+
     public static AudioBank Instance { get; private set; }
 
     readonly Dictionary<string, Sound> lookup = new Dictionary<string, Sound>();
@@ -49,6 +58,25 @@ public class AudioBank : MonoBehaviour
         windTarget = windVolume;
         if (windLoop != null) { windLoop.volume = windVolume; windLoop.Play(); }
         if (humLoop != null) { humLoop.volume = 0f; humLoop.Play(); }
+
+        musicA = gameObject.AddComponent<AudioSource>();
+        musicB = gameObject.AddComponent<AudioSource>();
+        foreach (var m in new[] { musicA, musicB }) { m.loop = true; m.playOnAwake = false; m.volume = 0f; }
+        PlayMusic(false);
+    }
+
+    /// <summary>Crossfades to the calm station theme, or the tense theme for the cryo puzzle.</summary>
+    public void PlayMusic(bool tense)
+    {
+        var clip = tense ? tenseTrack : calmTrack;
+        if (clip == null) return;
+        var current = aIsActive ? musicA : musicB;
+        if (current.clip == clip && current.isPlaying) return;
+        aIsActive = !aIsActive;
+        var next = aIsActive ? musicA : musicB;
+        next.clip = clip;
+        next.volume = 0f;
+        next.Play();
     }
 
     void OnDestroy()
@@ -61,6 +89,14 @@ public class AudioBank : MonoBehaviour
         float step = fadeSpeed * Time.unscaledDeltaTime;
         if (windLoop != null) windLoop.volume = Mathf.MoveTowards(windLoop.volume, windTarget, step);
         if (humLoop != null) humLoop.volume = Mathf.MoveTowards(humLoop.volume, humTarget, step);
+
+        if (musicA == null) return;
+        float musicStep = musicVolume / Mathf.Max(0.01f, musicFadeSeconds) * Time.unscaledDeltaTime;
+        var active = aIsActive ? musicA : musicB;
+        var idle = aIsActive ? musicB : musicA;
+        active.volume = Mathf.MoveTowards(active.volume, musicVolume, musicStep);
+        idle.volume = Mathf.MoveTowards(idle.volume, 0f, musicStep);
+        if (idle.isPlaying && idle.volume <= 0f) idle.Stop();
     }
 
     public void Play(string name, float volumeScale = 1f)
@@ -91,5 +127,10 @@ public static class Sfx
     public static void Ambience(bool terminalOn)
     {
         if (AudioBank.Instance != null) AudioBank.Instance.SetAmbience(terminalOn);
+    }
+
+    public static void Music(bool tense)
+    {
+        if (AudioBank.Instance != null) AudioBank.Instance.PlayMusic(tense);
     }
 }

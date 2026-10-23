@@ -19,10 +19,10 @@ MonoBehaviour:
   - title: Syndrome table
     tag: 1
     body: "Use the syndrome bits in the order shown in entry 17 (first bit = lamp
-      A, second bit = lamp B).\n\n<color=#ffe2a8><b>SYND  PAIR q0,q1  PAIR q1,q2 
+      A, second bit = lamp B).\n\n<color=#E3C58F><b>SYND  PAIR q0,q1  PAIR q1,q2 
       ACTION</b></color>\n 00   agree       agree       No correction\n 10   differ     
       agree       X on q0\n 11   differ      differ      X on q1\n 01   agree      
-      differ      X on q2\n\n<color=#3fe0b5><b>\u258C IN THIS INVESTIGATION</b>\n<indent=0.9em>The
+      differ      X on q2\n\n<color=#8FBCA0><b>\u258C IN THIS INVESTIGATION</b>\n<indent=0.9em>The
       console's syndrome comes from the circuit's <b>measured</b> parity checks.
       It is produced by the simulation, not assigned by the story.</indent></color>"
     bench: 3
@@ -32,11 +32,11 @@ MonoBehaviour:
       # which data qubit to flip'
   - title: Why the syndrome finds the error
     tag: 1
-    body: "Start from the encoded state |000\u27E9 and flip one qubit:\n\n<color=#ffe2a8><b>FLIPPED 
+    body: "Start from the encoded state |000\u27E9 and flip one qubit:\n\n<color=#E3C58F><b>FLIPPED 
       DATA  q0vsq1  q1vsq2  SYNDROME  FIX</b></color>\n  none     000   agree   agree    
       00      none\n  q0       100   differ  agree     10      X on q0\n  q1      
       010   differ  differ    11      X on q1\n  q2       001   agree   differ   
-      01      X on q2\n\n<color=#ffe2a8><b>\u258C INTUITION: THE LAMP RULE</b>\n<indent=0.9em>Find
+      01      X on q2\n\n<color=#E3C58F><b>\u258C INTUITION: THE LAMP RULE</b>\n<indent=0.9em>Find
       the qubit that sits in <b>every</b> pair that differs and in <b>no</b> pair
       that agrees. For syndrome 10, only the first pair differs, and q0 is the only
       qubit that belongs to the first pair alone. For 11, both pairs differ, and

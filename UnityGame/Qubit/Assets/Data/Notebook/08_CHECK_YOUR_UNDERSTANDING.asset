@@ -18,16 +18,16 @@ MonoBehaviour:
   entries:
   - title: Questions and answers
     tag: 0
-    body: "<color=#ffe2a8><b>Q.</b> What does the X gate do to |0\u27E9?</color>\n<b>A.</b>
-      It turns it into |1\u27E9.\n\n<color=#ffe2a8><b>Q.</b> A qubit in a 50/50 superposition
+    body: "<color=#E3C58F><b>Q.</b> What does the X gate do to |0\u27E9?</color>\n<b>A.</b>
+      It turns it into |1\u27E9.\n\n<color=#E3C58F><b>Q.</b> A qubit in a 50/50 superposition
       is measured once. What do you see?</color>\n<b>A.</b> One result, 0 or 1, each
-      with 50% probability. Never both.\n\n<color=#ffe2a8><b>Q.</b> The console shows
+      with 50% probability. Never both.\n\n<color=#E3C58F><b>Q.</b> The console shows
       syndrome 01. Which qubit flipped, and what is the fix?</color>\n<b>A.</b> q2
-      flipped. Apply X to q2.\n\n<color=#ffe2a8><b>Q.</b> The data reads 010. What
+      flipped. Apply X to q2.\n\n<color=#E3C58F><b>Q.</b> The data reads 010. What
       is the syndrome?</color>\n<b>A.</b> (0 \u2295 1, 1 \u2295 0) = 11, which points
-      to q1.\n\n<color=#ffe2a8><b>Q.</b> Why not measure the data qubits directly?</color>\n<b>A.</b>
+      to q1.\n\n<color=#E3C58F><b>Q.</b> Why not measure the data qubits directly?</color>\n<b>A.</b>
       It would collapse any superposition. Parity checks reveal only relationships
-      between qubits.\n\n<color=#ffe2a8><b>Q.</b> Why can this code not fix a phase
+      between qubits.\n\n<color=#E3C58F><b>Q.</b> Why can this code not fix a phase
       flip?</color>\n<b>A.</b> The parity checks compare bit values only, and a phase
       flip does not change them."
     bench: 5

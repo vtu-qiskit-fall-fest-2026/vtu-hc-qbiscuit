@@ -32,8 +32,8 @@ public class BootSequence : MonoBehaviour
     [SerializeField] TMP_Text splashStatus;
     [SerializeField] string[] splashMessages;
     [SerializeField] float splashTime = 4.5f;
-    [SerializeField] Color segmentOff = new Color(1f, 0.7f, 0.25f, 0.12f);
-    [SerializeField] Color segmentOn = new Color(1f, 0.7f, 0.25f, 1f);
+    [SerializeField] Color segmentOff = new Color(0.816f, 0.643f, 0.427f, 0.12f);
+    [SerializeField] Color segmentOn = new Color(0.816f, 0.643f, 0.427f, 1f);
 
     public IEnumerator Run()
     {

@@ -46,7 +46,11 @@ public static class GameSettings
     public static void Apply()
     {
         AudioListener.volume = VolumeSteps / 10f;
+#if !UNITY_WEBGL
+        // Browsers refuse fullscreen requests that don't come from the page itself, so the
+        // WebGL build leaves fullscreen to the host page (itch.io's fullscreen button).
         if (!Application.isEditor) Screen.fullScreen = Fullscreen;
+#endif
         PlayerPrefs.Save();
         Changed?.Invoke();
     }

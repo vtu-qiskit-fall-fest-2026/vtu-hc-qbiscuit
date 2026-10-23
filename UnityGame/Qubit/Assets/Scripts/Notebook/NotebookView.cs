@@ -39,15 +39,17 @@ public class NotebookView : MonoBehaviour
     [SerializeField] string pdfFileName = "ResearchNotebook.pdf";
 
     [Header("Colours")]
-    [SerializeField] string selectedInk = "#ffe2a8";
-    [SerializeField] string normalInk = "#ffb23f";
-    [SerializeField] string dim = "#a8701f";
-    [SerializeField] string faint = "#5a3c12";
-    [SerializeField] string linkColour = "#3fe0b5";
-    [SerializeField] Color tabSelected = new Color32(0xff, 0xb2, 0x3f, 0xff);
-    [SerializeField] Color tabIdle = new Color32(0x6a, 0x46, 0x14, 0xff);
-    [SerializeField] Color tabDisabled = new Color32(0x24, 0x18, 0x07, 0xff);
-    [SerializeField] Color inkOnTab = new Color32(0x0d, 0x08, 0x02, 0xff);
+    [SerializeField] string selectedInk = "#E3C58F";
+    [SerializeField] string normalInk = "#A2B8A8";
+    [SerializeField] string dim = "#718780";
+    [SerializeField] string faint = "#4A5E59";
+    [SerializeField] string linkColour = "#8FBCA0";
+    [Tooltip("Dot beside unread entries; amber so it stands apart from the sage titles.")]
+    [SerializeField] string unreadColour = "#D0A46D";
+    [SerializeField] Color tabSelected = new Color32(0xd0, 0xa4, 0x6d, 0xff);
+    [SerializeField] Color tabIdle = new Color32(0x34, 0x4a, 0x47, 0xff);
+    [SerializeField] Color tabDisabled = new Color32(0x1a, 0x28, 0x26, 0xff);
+    [SerializeField] Color inkOnTab = new Color32(0x10, 0x1b, 0x1d, 0xff);
 
     [SerializeField] float scrollStep = 0.25f;
 
@@ -238,7 +240,7 @@ public class NotebookView : MonoBehaviour
                 string title = s.entries[i].title;
                 bool unread = !readEntries.Contains(s.number + ":" + i);
                 if (i == entryIndexValue) index.Append($"<link=\"entry:{i}\"><color={selectedInk}><b>></b><indent=1.1em><b>{title}</b></indent></color></link>\n");
-                else index.Append($"<link=\"entry:{i}\"><color={linkColour}>{(unread ? "•" : " ")}</color><indent=1.1em><color={normalInk}>{title}</color></indent></link>\n");
+                else index.Append($"<link=\"entry:{i}\"><color={unreadColour}>{(unread ? "•" : " ")}</color><indent=1.1em><color={normalInk}>{title}</color></indent></link>\n");
             }
         }
         entryIndex.text = index.ToString();

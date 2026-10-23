@@ -22,10 +22,10 @@ MonoBehaviour:
       information redundantly across three <b>physical</b> qubits:\n\n        |0_L\u27E9
       = |000\u27E9        |1_L\u27E9 = |111\u27E9\n\nThe subscript L means \"logical\".
       The logical information lives in all three qubits together, not in any single
-      one.\n\n<color=#ffe2a8><b>\u258C INTUITION</b>\n<indent=0.9em>It works like
+      one.\n\n<color=#E3C58F><b>\u258C INTUITION</b>\n<indent=0.9em>It works like
       sending a message three times and taking a majority vote. If all three copies
       should agree, one flipped value stands out. By checking which pairs disagree,
-      you can tell which qubit was flipped.</indent></color>\n\n<color=#c08a3e><b>\u258C
+      you can tell which qubit was flipped.</indent></color>\n\n<color=#B09A74><b>\u258C
       GO DEEPER</b>\n<indent=0.9em>The code can also protect a superposition. Using
       CNOT gates, a qubit in the state \u03B1|0\u27E9 + \u03B2|1\u27E9 is encoded
       as \u03B1|000\u27E9 + \u03B2|111\u27E9.\n\n<b>Encoding is not copying.</b>
@@ -57,14 +57,14 @@ MonoBehaviour:
   - title: 16. Parity check
     tag: 1
     body: "A <b>parity check</b> tells you whether two bits agree or differ. It uses
-      the XOR operation, written \u2295:\n\n<color=#ffe2a8><b>FIRST  SECOND  XOR 
+      the XOR operation, written \u2295:\n\n<color=#E3C58F><b>FIRST  SECOND  XOR 
       MEANING</b></color>\n  0      0      0    agree\n  0      1      1    differ\n 
       1      0      1    differ\n  1      1      0    agree\n\n<b>How the circuit
       computes it.</b> Ancilla A starts at 0. One CNOT from q0 and one CNOT from
       q1 each flip A if their control is 1. If q0 and q1 are both 1, A is flipped
       twice and ends at 0 (they agree). If only one is 1, A is flipped once and ends
       at 1 (they differ). So A ends up holding q0 \u2295 q1, and B ends up holding
-      q1 \u2295 q2.\n\n<color=#c08a3e><b>\u258C GO DEEPER</b>\n<indent=0.9em>For
+      q1 \u2295 q2.\n\n<color=#B09A74><b>\u258C GO DEEPER</b>\n<indent=0.9em>For
       the protected state \u03B1|000\u27E9 + \u03B2|111\u27E9, both branches have
       the same parities (all bits agree), so the checks return 00 <b>whatever \u03B1
       and \u03B2 are</b> and leave the superposition intact. After an X error on
