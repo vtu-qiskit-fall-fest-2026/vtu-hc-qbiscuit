@@ -1,0 +1,16 @@
+# Render Blueprint for the Andromeda quantum backend (FastAPI + Qiskit Aer).
+# In Render: New > Blueprint, pick this repository. The service URL becomes
+# https://<name>.onrender.com, and the Unity build calls <that URL>/run.
+services:
+  - type: web
+    name: andromeda-quantum-backend
+    runtime: python
+    plan: free
+    rootDir: Andromeda_Backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api_server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      # Qiskit 1.x does not install on Python 3.13.
+      - key: PYTHON_VERSION
+        value: 3.12.8

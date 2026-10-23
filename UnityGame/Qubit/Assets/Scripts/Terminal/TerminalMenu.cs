@@ -20,6 +20,8 @@ public class TerminalMenu : MonoBehaviour
 
     void Awake()
     {
+        // Items switched off for this platform (see HideOnWebGL) drop out of navigation.
+        items.RemoveAll(item => item == null || !item.gameObject.activeSelf);
         foreach (var item in items) item.Bind(this);
     }
 

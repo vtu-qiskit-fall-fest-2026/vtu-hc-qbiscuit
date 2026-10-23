@@ -66,11 +66,15 @@ public class NoisyResponse
 /// </summary>
 public class QuantumBackend : MonoBehaviour
 {
-    [Tooltip("POST endpoint of the Qiskit backend, e.g. https://andromeda-backend.onrender.com/run. Leave empty to use the offline stand-in.")]
+    [Tooltip("POST endpoint used in the editor, e.g. a local server at http://127.0.0.1:8000/run. Leave empty to use the offline stand-in.")]
     [SerializeField] string serverUrl = "";
+    [Tooltip("POST endpoint used by builds (WebGL on itch.io, desktop). Must be HTTPS for itch.io, e.g. the Render service URL + /run.")]
+    [SerializeField] string buildServerUrl = "https://andromeda-quantum-backend.onrender.com/run";
     [Tooltip("A sleeping free-tier server can take up to a minute to wake.")]
     [SerializeField] int timeoutSeconds = 75;
     [SerializeField] bool allowOfflineStandIn = true;
+    [Tooltip("If the hosted server cannot be reached (asleep past the timeout, or down), answer with the labelled stand-in so the game stays playable.")]
+    [SerializeField] bool fallBackWhenUnreachable = true;
     [SerializeField] float standInDelay = 0.9f;
 
     public const string StandInLabel = "OFFLINE STAND-IN (NOT QISKIT)";
@@ -112,6 +116,12 @@ public class QuantumBackend : MonoBehaviour
             if (url.EndsWith("/run")) url = url.Substring(0, url.Length - 4);
             return url + "/health";
         }
+    }
+
+    void Awake()
+    {
+        // Builds talk to the hosted backend; the editor keeps its own (usually local) URL.
+        if (!Application.isEditor) serverUrl = buildServerUrl;
     }
 
     void Start()
@@ -185,7 +195,8 @@ public class QuantumBackend : MonoBehaviour
             if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.DataProcessingError)
             {
                 SetStatus(Status.Unreachable);
-                done(Fail(request, $"Could not reach the Qiskit backend ({www.error})."));
+                if (allowOfflineStandIn && fallBackWhenUnreachable) done(OfflineStandIn.Run(request));
+                else done(Fail(request, $"Could not reach the Qiskit backend ({www.error})."));
                 yield break;
             }
             SetStatus(Status.Online);
@@ -232,7 +243,8 @@ public class QuantumBackend : MonoBehaviour
             if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.DataProcessingError)
             {
                 SetStatus(Status.Unreachable);
-                done(new NoisyResponse { success = false, error = $"Could not reach the Qiskit backend ({www.error})." });
+                if (allowOfflineStandIn && fallBackWhenUnreachable) done(OfflineStandIn.RunNoisy(request));
+                else done(new NoisyResponse { success = false, error = $"Could not reach the Qiskit backend ({www.error})." });
                 yield break;
             }
             SetStatus(Status.Online);
