@@ -15,8 +15,9 @@ public class TerminalMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerCli
     [SerializeField] TMP_Text labelText;
     [SerializeField] TMP_Text valueText;
     [SerializeField] Image highlight;
-    [SerializeField] Color normalColor = new Color(1f, 0.7f, 0.25f);
-    [SerializeField] Color selectedTextColor = new Color(0.05f, 0.03f, 0.01f);
+    [SerializeField] Color normalColor = new Color(0.635f, 0.722f, 0.659f);
+    [SerializeField] Color selectedTextColor = new Color(0.063f, 0.106f, 0.114f);
+    [SerializeField, Range(50, 100)] int badgeScale = 75;
 
     public UnityEvent onSubmit;
     public UnityEvent onLeft;
@@ -48,11 +49,28 @@ public class TerminalMenuItem : MonoBehaviour, IPointerEnterHandler, IPointerCli
     public void SetSelected(bool selected)
     {
         this.selected = selected;
-        labelText.text = (selected ? "> " : "  ") + label + (string.IsNullOrEmpty(badge) ? "" : "  " + badge);
+        // On the inverted bar a coloured badge loses contrast, so it takes the label's colour.
+        string shownBadge = selected ? StripColor(badge) : badge;
+        // Badges are set smaller so the longest ("[VERIFIED]") still fits the module column.
+        labelText.text = (selected ? "> " : "  ") + label + (string.IsNullOrEmpty(shownBadge) ? "" : " <size=" + badgeScale + "%>" + shownBadge + "</size>");
         if (highlight != null) highlight.enabled = selected;
         Color c = selected ? selectedTextColor : normalColor;
         labelText.color = c;
         if (valueText != null) valueText.color = c;
+    }
+
+    static string StripColor(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+        text = text.Replace("</color>", "");
+        int start;
+        while ((start = text.IndexOf("<color=")) >= 0)
+        {
+            int end = text.IndexOf('>', start);
+            if (end < 0) break;
+            text = text.Remove(start, end - start + 1);
+        }
+        return text;
     }
 
     public void OnPointerEnter(PointerEventData eventData)

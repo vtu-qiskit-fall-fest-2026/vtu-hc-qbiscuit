@@ -32,6 +32,33 @@ public class QuantumResponse
     [NonSerialized] public string source;
 }
 
+/// <summary>Cryogenic noise experiment: prepare |1⟩, hold it, measure.</summary>
+[Serializable]
+public class NoisyRequest
+{
+    public int version = 1;
+    public string action = "noisy";
+    public string qubit = "C";
+    public float temperature_mk = 80f;
+    public float hold_us = 20f;
+    public int shots = 200;
+    public bool encoded;
+}
+
+[Serializable]
+public class NoisyResponse
+{
+    public bool success;
+    public float survival;
+    public int shots;
+    public float t1_us;
+    public string error;
+    public string detail;
+
+    [NonSerialized] public string source;
+    public int Kept => Mathf.RoundToInt(survival * shots);
+}
+
 /// <summary>
 /// Sends circuit requests to the Qiskit Aer backend over HTTP (e.g. hosted on Render).
 /// With no server URL it can fall back to a clearly labelled offline stand-in, so the
@@ -176,6 +203,50 @@ public class QuantumBackend : MonoBehaviour
         }
     }
 
+    /// <summary>Runs the cryogenic noise experiment on the backend (or the labelled stand-in).</summary>
+    public IEnumerator SendNoisy(NoisyRequest request, Action<NoisyResponse> done)
+    {
+        if (!UsesServer)
+        {
+            if (!allowOfflineStandIn) { done(new NoisyResponse { success = false, error = "No backend URL is configured." }); yield break; }
+            yield return new WaitForSecondsRealtime(standInDelay);
+            done(OfflineStandIn.RunNoisy(request));
+            yield break;
+        }
+
+        using (var www = new UnityWebRequest(serverUrl, UnityWebRequest.kHttpVerbPOST))
+        {
+            www.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(request)));
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.timeout = timeoutSeconds;
+            yield return www.SendWebRequest();
+
+            string body = www.downloadHandler != null ? www.downloadHandler.text : "";
+            NoisyResponse response = null;
+            if (!string.IsNullOrEmpty(body))
+            {
+                try { response = JsonUtility.FromJson<NoisyResponse>(body); }
+                catch (Exception) { response = null; }
+            }
+            if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.DataProcessingError)
+            {
+                SetStatus(Status.Unreachable);
+                done(new NoisyResponse { success = false, error = $"Could not reach the Qiskit backend ({www.error})." });
+                yield break;
+            }
+            SetStatus(Status.Online);
+            if (response == null || !response.success)
+            {
+                string reason = response != null ? (response.error ?? response.detail) : null;
+                done(new NoisyResponse { success = false, error = "Qiskit backend error: " + (reason ?? www.error ?? "unreadable reply") });
+                yield break;
+            }
+            response.source = "QISKIT AER";
+            done(response);
+        }
+    }
+
     static QuantumResponse Fail(QuantumRequest request, string message) => new QuantumResponse
     {
         success = false, action = request.action, syndrome = "", final_data = "",
@@ -189,6 +260,31 @@ public class QuantumBackend : MonoBehaviour
 /// </summary>
 public static class OfflineStandIn
 {
+    // Same simplified cryogenic model as Andromeda_Backend/quantum_backend/noise.py.
+    static float T1(string qubit, float temperatureMk)
+    {
+        float t1Ref = qubit == "A" ? 990f : qubit == "B" ? 657f : 58f;
+        return t1Ref * Mathf.Pow(80f / temperatureMk, 1.6f);
+    }
+
+    public static NoisyResponse RunNoisy(NoisyRequest r)
+    {
+        float t1 = T1(r.qubit, Mathf.Clamp(r.temperature_mk, 10f, 80f));
+        float p = Mathf.Exp(-r.hold_us / t1); // chance one qubit is still |1⟩
+        int kept = 0;
+        for (int s = 0; s < r.shots; s++)
+        {
+            int ones = 0, width = r.encoded ? 3 : 1;
+            for (int q = 0; q < width; q++) if (UnityEngine.Random.value < p) ones++;
+            if (r.encoded ? ones >= 2 : ones == 1) kept++;
+        }
+        return new NoisyResponse
+        {
+            success = true, survival = kept / (float)r.shots, shots = r.shots, t1_us = t1,
+            source = QuantumBackend.StandInLabel
+        };
+    }
+
     public static QuantumResponse Run(QuantumRequest request)
     {
         var d = new bool[3];

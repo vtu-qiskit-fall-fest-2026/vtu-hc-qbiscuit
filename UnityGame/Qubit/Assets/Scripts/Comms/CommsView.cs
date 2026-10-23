@@ -25,11 +25,11 @@ public class CommsView : MonoBehaviour
     [SerializeField] float transmitTime = 0.4f;
 
     [Header("Colours")]
-    [SerializeField] string specialistColour = "#3fe0b5";
-    [SerializeField] string youColour = "#ffe2a8";
-    [SerializeField] string systemColour = "#a8701f";
-    [SerializeField] string textColour = "#ffb23f";
-    [SerializeField] string faint = "#5a3c12";
+    [SerializeField] string specialistColour = "#8FBCA0";
+    [SerializeField] string youColour = "#E3C58F";
+    [SerializeField] string systemColour = "#718780";
+    [SerializeField] string textColour = "#A2B8A8";
+    [SerializeField] string faint = "#4A5E59";
 
     [Tooltip("Raised when the player presses Esc to leave the channel.")]
     public UnityEvent onClose = new UnityEvent();

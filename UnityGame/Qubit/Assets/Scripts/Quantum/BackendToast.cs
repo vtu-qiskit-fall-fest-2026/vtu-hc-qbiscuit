@@ -12,8 +12,8 @@ public class BackendToast : MonoBehaviour
     [SerializeField] TMP_Text title;
     [SerializeField] TMP_Text body;
     [SerializeField] float showSeconds = 4f;
-    [SerializeField] Color online = new Color32(0x3f, 0xe0, 0xb5, 0xff);
-    [SerializeField] Color offline = new Color32(0xff, 0x6a, 0x4a, 0xff);
+    [SerializeField] Color online = new Color32(0x8f, 0xbc, 0xa0, 0xff);
+    [SerializeField] Color offline = new Color32(0xc8, 0x79, 0x63, 0xff);
 
     bool wasOnline;
 

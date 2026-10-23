@@ -2,6 +2,7 @@
 from quantum_backend.diagnosis import diagnose_error
 from quantum_backend.verification import verify_correction
 from quantum_backend.compiler import simulate_player_circuit
+from quantum_backend.noise import run_noisy_experiment
 
 
 def handle_request(request):
@@ -31,6 +32,20 @@ def handle_request(request):
                 "version": 1,
                 "success": False,
                 "action": "simulate",
+                "error": str(exc)
+            }
+
+    # Cryogenic noise puzzle: hold |1> and watch it relax.
+    if action == "noisy":
+        try:
+            result = run_noisy_experiment(request)
+            result["version"] = 1
+            return result
+        except (ValueError, TypeError) as exc:
+            return {
+                "version": 1,
+                "success": False,
+                "action": "noisy",
                 "error": str(exc)
             }
 

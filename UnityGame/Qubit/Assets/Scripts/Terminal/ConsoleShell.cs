@@ -45,6 +45,12 @@ public class ConsoleShell : MonoBehaviour
     [Tooltip("Notebook section opened from the diagnostic console (05 = reading the console).")]
     [SerializeField] int notebookSectionFromDiagnostics = 4;
 
+    [Header("Cryo control (cause of the error)")]
+    [SerializeField] CryoView cryo;
+    [SerializeField] TerminalMenuItem cryoItem;
+    [SerializeField] GameObject[] hiddenDuringCryo;
+    [SerializeField] string cryoKeys = "[1-3] SCAN  [←/→] DIAL / HOLD  [↑/↓] HOLD  [ENTER] FIRE  [E] ENCODE  [ESC] BACK";
+
     [Header("Act III: report and ending")]
     [SerializeField] EndingView ending;
     [SerializeField] GameObject[] hiddenDuringEnding;
@@ -60,39 +66,48 @@ public class ConsoleShell : MonoBehaviour
 
     [Header("Main panel cards")]
     [SerializeField, TextArea(4, 12)] string objectiveCard =
-        "<color=#ffe2a8>02:18 UTC   CHANNEL CLOSED</color>\n\n" +
+        "<color=#E3C58F>02:18 UTC   CHANNEL CLOSED</color>\n\n" +
         "OBJECTIVE ... REVIEW THE RESEARCH NOTEBOOK\n" +
         "THEN ........ BRING THE DIAGNOSTIC MODULE ONLINE\n\n" +
-        "<color=#a8701f>Start with the CORE entries: the X gate, bit-flip errors and parity checks.</color>";
+        "<color=#718780>Start with the CORE entries: the X gate, bit-flip errors and parity checks.</color>";
     [SerializeField, TextArea(4, 12)] string diagnosticsCard =
-        "<color=#ffe2a8>DIAGNOSTIC MODULE ONLINE</color>\n\n" +
+        "<color=#E3C58F>DIAGNOSTIC MODULE ONLINE</color>\n\n" +
         "CIRCUIT ..... 3 DATA QUBITS + 2 ANCILLAS\n" +
         "BACKEND ..... QISKIT AER (LOCAL)\n" +
         "TASK ........ FIND AND CORRECT THE BIT-FLIP ERROR\n\n" +
-        "<color=#a8701f>Select DIAGNOSTICS and press [ENTER].</color>";
+        "<color=#718780>Select DIAGNOSTICS and press [ENTER].</color>";
 
     [SerializeField, TextArea(4, 12)] string verifiedCard =
-        "<color=#3fe0b5>REPAIR VERIFIED</color>\n\n" +
-        "RESULT ...... ENCODED STATE RESTORED (000)\n" +
+        "<color=#8FBCA0>REPAIR VERIFIED</color>   <color=#718780>INCOMING // LUNAR RELAY</color>\n\n" +
+        "\"Good work, Andromeda. But why did it flip? We're seeing fluctuations around the cryogenic system. Find the cause before the transmission window closes.\"\n\n" +
+        "<color=#718780>Select CRYO CONTROL and press [ENTER].</color>";
+    [SerializeField, TextArea(4, 12)] string causeCard =
+        "<color=#8FBCA0>CAUSE FOUND</color>\n\n" +
+        "QUBIT ....... Q-C, NEXT TO THE CRYOGENIC FAULT\n" +
+        "CAUSE ....... THERMAL RELAXATION (HEAT + TIME)\n" +
         "REPORT ...... READY FOR TRANSMISSION\n\n" +
-        "<color=#a8701f>Select MISSION REPORT and press [ENTER] to transmit.</color>";
+        "<color=#718780>Select MISSION REPORT and press [ENTER] to transmit.</color>";
 
     [Tooltip("Raised when the player opens the COMMS LINK module.")]
     public UnityEvent onOpenComms;
     [Tooltip("Raised when the player opens DIAGNOSTICS once it is online.")]
     public UnityEvent onOpenDiagnostics;
 
-    const string Incoming = "<color=#3fe0b5>INCOMING</color>";
-    const string New = "<color=#3fe0b5>NEW</color>";
-    const string Online = "<color=#3fe0b5>ONLINE</color>";
+    // Badges are bracketed so they read apart from the label: amber needs attention, mint is done.
+    const string Incoming = "<color=#D0A46D>[INCOMING]</color>";
+    const string New = "<color=#D0A46D>[NEW]</color>";
+    const string Online = "<color=#D0A46D>[ONLINE]</color>";
 
-    const string Ready = "<color=#3fe0b5>READY</color>";
-    const string Verified = "<color=#3fe0b5>VERIFIED</color>";
+    const string Ready = "<color=#D0A46D>[READY]</color>";
+    const string Verified = "<color=#8FBCA0>[VERIFIED]</color>";
+    const string Sent = "<color=#8FBCA0>[SENT]</color>";
+    const string Done = "<color=#8FBCA0>[DONE]</color>";
 
     float sessionStart;
     bool transmissionAnswered;
     bool notebookReviewed;
     bool repairVerified;
+    bool causeFound;
     bool reportSent;
     bool notebookFromDiagnostics;
     DialogueScript reportDialogue;
@@ -113,6 +128,11 @@ public class ConsoleShell : MonoBehaviour
             diagnostics.onOpenNotebook.AddListener(OpenNotebookFromDiagnostics);
         }
         if (ending != null) ending.onFinished.AddListener(FinishSession);
+        if (cryo != null)
+        {
+            cryo.onClose.AddListener(CloseCryo);
+            cryo.onCompleted.AddListener(OnCauseFound);
+        }
     }
 
     void OnEnable()
@@ -274,12 +294,44 @@ public class ConsoleShell : MonoBehaviour
         ShowCard(verifiedCard);
     }
 
+    // ---- Cryo control: the cause of the error ----
+
+    public void OpenCryo()
+    {
+        if (!repairVerified) { Status("CRYO CONTROL LOCKED. REPAIR THE FAULT FIRST."); return; }
+        if (cryo == null) return;
+        foreach (var g in hiddenDuringCryo) g.SetActive(false);
+        modulesMenu.enabled = false;
+        if (keysText != null) keysText.text = cryoKeys;
+        Sfx.Music(true);
+        cryo.Open();
+    }
+
+    public void CloseCryo()
+    {
+        cryo.gameObject.SetActive(false);
+        foreach (var g in hiddenDuringCryo) g.SetActive(true);
+        modulesMenu.enabled = true;
+        if (keysText != null) keysText.text = consoleKeys;
+        Sfx.Music(false);
+        Status(causeFound ? "CAUSE FOUND. MISSION REPORT READY." : "CRYO CONTROL CLOSED. CAUSE STILL UNKNOWN.");
+        if (causeFound) ShowCard(causeCard);
+    }
+
+    void OnCauseFound()
+    {
+        if (causeFound) return;
+        causeFound = true;
+        ApplyProgress();
+    }
+
     // ---- Act III: mission report and ending ----
 
     /// <summary>MISSION REPORT module: transmit the verified result, or explain why it's locked.</summary>
     public void ReportLocked()
     {
         if (!repairVerified) { Status("NO VERIFIED RESULT TO TRANSMIT YET."); return; }
+        if (!causeFound) { Status("FIND THE CAUSE FIRST: OPEN CRYO CONTROL."); return; }
         if (comms == null) return;
 
         foreach (var g in hiddenDuringComms) g.SetActive(false);
@@ -334,14 +386,18 @@ public class ConsoleShell : MonoBehaviour
         string fault = fix >= 0 ? $"SINGLE BIT-FLIP ON q{fix}" : "NONE DETECTED";
         string source = diagnostics.VerifiedBy;
         return
-            $"<color=#ffe2a8>MISSION LOG  //  ANDROMEDA RESEARCH STATION</color>\n" +
-            $"<color=#a8701f>{StationTime(false)} UTC   SESSION 0217-A</color>\n\n" +
+            $"<color=#E3C58F>MISSION LOG  //  ANDROMEDA RESEARCH STATION</color>\n" +
+            $"<color=#718780>{StationTime(false)} UTC   SESSION 0217-A</color>\n\n" +
             $"FAULT .......... {fault}\n" +
             $"SYNDROME ....... {syn}\n" +
             $"CORRECTION ..... {(fix >= 0 ? "X ON q" + fix : "NONE")}\n" +
-            $"VERIFICATION ... PASSED  (DATA 000, {source})\n\n" +
+            $"VERIFICATION ... PASSED  (DATA 000, {source})\n" +
+            (cryo != null && cryo.Completed
+                ? $"CAUSE .......... THERMAL RELAXATION ON Q-C  (T1 ≈ {cryo.EstimatedT1:0} µs AT 80 mK)\n" +
+                  $"MITIGATION ..... CORE COOLED, POWER {cryo.WinningPower:0}%\n\n"
+                : "\n") +
             $"The control calculation can be trusted again.\n\n" +
-            $"<color=#3fe0b5>INCOMING  //  LUNAR RELAY</color>\n" +
+            $"<color=#8FBCA0>INCOMING  //  LUNAR RELAY</color>\n" +
             $"\"The instrument's next measurement matches your result. One more thing: the latest lunar survey shows a signal we can't explain yet. Sending the data now.\"";
     }
 
@@ -383,12 +439,24 @@ public class ConsoleShell : MonoBehaviour
         }
         if (reportItem != null)
         {
-            reportItem.SetBadge(reportSent ? "<color=#3fe0b5>SENT</color>" : repairVerified ? Ready : "");
+            bool ready = repairVerified && causeFound;
+            reportItem.SetBadge(reportSent ? Sent : ready ? Ready : "");
             reportItem.SetDescription(reportSent
                 ? "STATUS: SENT\nRe-read the report transmitted to the lunar vessel."
+                : ready
+                ? "STATUS: READY\nPress [ENTER] to transmit the verified result and its cause."
                 : repairVerified
-                ? "STATUS: READY\nPress [ENTER] to transmit the verified result to the lunar vessel."
+                ? "STATUS: LOCKED\nFind the cause of the bit-flip in CRYO CONTROL first."
                 : "STATUS: LOCKED\nNeeds a verified result before anything can be transmitted.");
+        }
+        if (cryoItem != null)
+        {
+            cryoItem.SetBadge(causeFound ? Done : repairVerified ? New : "");
+            cryoItem.SetDescription(causeFound
+                ? "STATUS: STABLE\nQ-C cooled. Revisit the experiments any time."
+                : repairVerified
+                ? "STATUS: ALERT\nFluctuations near the cryogenic system. Find out why the qubit flipped."
+                : "STATUS: LOCKED\nRemote access to the vessel's cryogenic core opens after the repair.");
         }
         if (modulesMenu != null && modulesMenu.isActiveAndEnabled) modulesMenu.Refresh();
     }

@@ -39,11 +39,11 @@ MonoBehaviour:
   - title: 7. The X gate (bit-flip gate)
     tag: 1
     body: "The <b>Pauli-X gate</b> swaps the two basis states:\n\n        X|0\u27E9
-      = |1\u27E9        X|1\u27E9 = |0\u27E9\n\n<color=#ffe2a8><b>INPUT    GATE   
+      = |1\u27E9        X|1\u27E9 = |0\u27E9\n\n<color=#E3C58F><b>INPUT    GATE   
       OUTPUT</b></color>\n |0\u27E9      X       |1\u27E9\n |1\u27E9      X      
       |0\u27E9\n\nX works like a classical NOT. It also acts on superpositions by
       swapping the two amplitudes: X(\u03B1|0\u27E9 + \u03B2|1\u27E9) = \u03B1|1\u27E9
-      + \u03B2|0\u27E9. Applying X twice returns the qubit to where it started.\n\n<color=#3fe0b5><b>\u258C
+      + \u03B2|0\u27E9. Applying X twice returns the qubit to where it started.\n\n<color=#8FBCA0><b>\u258C
       IN THIS INVESTIGATION</b>\n<indent=0.9em>In this game, an X gate plays two
       roles: an <b>unintended</b> X models a bit-flip error, and a <b>deliberate</b>
       X is the correction. The gate is the same. What differs is whether it was intended.</indent></color>"
@@ -54,7 +54,7 @@ MonoBehaviour:
     tag: 2
     body: "The <b>controlled-NOT (CNOT)</b> gate acts on two qubits, a <b>control</b>
       and a <b>target</b>. If the control is 1, it flips the target. If the control
-      is 0, it does nothing. The control is never changed.\n\n<color=#ffe2a8><b>CONTROL 
+      is 0, it does nothing. The control is never changed.\n\n<color=#E3C58F><b>CONTROL 
       TARGET  ->  CONTROL  TARGET</b></color>\n   0       0           0       0\n  
       0       1           0       1\n   1       0           1       1\n   1      
       1           1       0\n\nCNOT is how one qubit can \"inspect\" another. If
@@ -69,13 +69,13 @@ MonoBehaviour:
     body: "A <b>quantum circuit</b> is an ordered list of gates and measurements
       applied to qubits. In a circuit diagram, each qubit is a horizontal line and
       time runs from left to right. This is the station's diagnostic circuit, drawn
-      as a grid:\n\n<color=#ffe2a8><b>QUBIT  START  ERROR?  C1  C2  C3  C4  MEASURE</b></color>\n
+      as a grid:\n\n<color=#E3C58F><b>QUBIT  START  ERROR?  C1  C2  C3  C4  MEASURE</b></color>\n
       q0      0      X?     \u25CF\n q1      0      X?         \u25CF   \u25CF\n
       q2      0      X?                 \u25CF\n A       0             \u2295   \u2295            
-      M\n B       0                     \u2295   \u2295     M\n\n<color=#c08a3e>\u25CF
+      M\n B       0                     \u2295   \u2295     M\n\n<color=#B09A74>\u25CF
       = control, \u2295 = target of a CNOT, X? = possible bit-flip error, M = measurement.
       Ancilla A collects the parity of q0 and q1. Ancilla B collects the parity of
-      q1 and q2.</color>\n\n<color=#3fe0b5><b>\u258C IN THIS INVESTIGATION</b>\n<indent=0.9em>Three
+      q1 and q2.</color>\n\n<color=#8FBCA0><b>\u258C IN THIS INVESTIGATION</b>\n<indent=0.9em>Three
       <b>data</b> wires carry the information being protected. Two extra <b>helper</b>
       wires (A and B) detect disagreements between the data qubits.</indent></color>"
     bench: 3

@@ -54,13 +54,13 @@ public class DiagnosticsView : MonoBehaviour
     [SerializeField] Button notebookButton;
 
     [Header("Colours")]
-    [SerializeField] Color amber = new Color32(0xff, 0xb2, 0x3f, 0xff);
-    [SerializeField] Color bright = new Color32(0xff, 0xe2, 0xa8, 0xff);
-    [SerializeField] Color dim = new Color32(0xa8, 0x70, 0x1f, 0xff);
-    [SerializeField] Color faint = new Color32(0x5a, 0x3c, 0x12, 0xff);
-    [SerializeField] Color teal = new Color32(0x3f, 0xe0, 0xb5, 0xff);
-    [SerializeField] Color alert = new Color32(0xff, 0x6a, 0x4a, 0xff);
-    [SerializeField] Color lampOff = new Color32(0x3a, 0x26, 0x0b, 0xff);
+    [SerializeField] Color amber = new Color32(0xd0, 0xa4, 0x6d, 0xff);
+    [SerializeField] Color bright = new Color32(0xe3, 0xc5, 0x8f, 0xff);
+    [SerializeField] Color dim = new Color32(0x71, 0x87, 0x80, 0xff);
+    [SerializeField] Color faint = new Color32(0x4a, 0x5e, 0x59, 0xff);
+    [SerializeField] Color teal = new Color32(0x8f, 0xbc, 0xa0, 0xff);
+    [SerializeField] Color alert = new Color32(0xc8, 0x79, 0x63, 0xff);
+    [SerializeField] Color lampOff = new Color32(0x1f, 0x2d, 0x2b, 0xff);
 
     public UnityEvent onClose = new UnityEvent();
     public UnityEvent onVerified = new UnityEvent();
