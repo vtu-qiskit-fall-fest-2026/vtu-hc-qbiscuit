@@ -5,6 +5,8 @@
 **VTU-QFF-HC-0191** &nbsp;|&nbsp; Tier: **Online**
 
 ### 🎮 [Play Andromeda Station: The Last Qubit on itch.io](https://sohampawar.itch.io/the-lost-qubit)
+#### 🎬 [Video Link](https://drive.google.com/drive/folders/1S922IWyR1JDmxjOhipljELpujHV0PnG0?usp=sharing)
+#### 📽️ [PPT Link](https://drive.google.com/drive/folders/1HhCSCOcXZPTdQXdaeEj4gAzlgiaEjIBj?usp=sharing)
 
 </div>
 
@@ -68,11 +70,11 @@ who experiences it, and why does it matter. Link to the official problem
 statement from the brief if one applies.
 -->
 
-**Problem:** _Describe the problem in 2–3 sentences._
+**Problem:** Quantum computing concepts such as superposition, measurement, and quantum noise can be difficult for beginners to understand. Learning how quantum errors affect computation and how error-correction techniques work requires accessible, interactive tools.
 
-**Why it matters:** _Explain the impact or opportunity._
+**Why it matters:** Making quantum concepts visual and interactive can help learners develop practical intuition about quantum circuits, noise, and error correction.
 
-**Track / Category:** _Online / Offline · Track 1 / Track 2 · <domain>_
+**Track / Category:** Online / Offline · Track: Quantum Hardware and Error Correction · Category: Quantum Education & Error Correction
 
 ---
 
@@ -83,11 +85,11 @@ Describe your solution. Keep it concrete: the core idea, the user flow, and
 the quantum/ML technique you are applying.
 -->
 
-**Solution:** _In 2–3 sentences, describe what you built._
+**Solution:** Echoes of Andromeda is a story-driven quantum learning game in which players investigate a malfunctioning quantum processor aboard a lunar vessel. Players explore quantum circuits, compare ideal and noisy simulations, and investigate bit-flip errors using Qiskit and Qiskit Aer.
 
-**Key idea:** _The one-line technical summary of your approach._
+**Key idea:** Integrate interactive Unity-based circuit design with a custom Python compilation pipeline and Qiskit Aer simulation.
 
-**Why this works:** _How your approach addresses the problem statement._
+**Why this works:** Players can experiment with quantum gates, observe measurement outcomes, and explore syndrome-based error detection and correction through hands-on gameplay.
 
 ---
 
@@ -99,17 +101,24 @@ Walk through how it works. A simple pipeline diagram in text or Mermaid is ideal
 
 ```mermaid
 flowchart LR
-    A[Input Data] --> B[Preprocessing]
-    B --> C[Quantum Circuit / Model]
-    C --> D[Post-processing]
-    D --> E[Output]
+    A[Unity Circuit Editor] --> B[JSON Instructions]
+    B --> C[Custom Python Compiler]
+    C --> D[Qiskit QuantumCircuit]
+    D --> E[Qiskit Transpilation]
+    E --> F[Qiskit Aer Simulation]
+    F --> G[Measurement Results]
+    G --> H[Unity Visualization]
 ```
 
-1. **Input** — _what data goes in and in what format_
-2. **Preprocessing** — _cleaning, feature extraction, encoding_
-3. **Quantum core** — _the circuit, ansatz, or algorithm used_
-4. **Post-processing** — _decoding, measurement, scoring_
-5. **Output** — _what the user finally gets_
+**Input** — Players select quantum gates and qubits through the Unity interface.
+
+**Preprocessing** — Circuit instructions are encoded as JSON and validated by the Python compiler.
+
+**Quantum Core** — The compiler constructs Qiskit circuits, which are transpiled and executed using Qiskit Aer with optional configured noise.
+
+**Post-processing** — Measurement counts and error-diagnosis results are processed to evaluate circuit behaviour and correction outcomes.
+
+**Output** — Unity visualizes circuit results, measurement distributions, and error-detection or correction outcomes.
 
 ---
 
@@ -404,12 +413,12 @@ git pull --rebase       # update your branch on top of main
 
 - [x] Repository created and **public**
 - [x] All team members added as **collaborators** and invitations accepted
-- [ ] `README.md` updated with project details, problem statement and solution
+- [x] `README.md` updated with project details, problem statement and solution
 - [x] Team members listed under [Team Members](#-team-members-github-ids)
-- [ ] `requirements.txt` committed and project runs from a clean clone
+- [x] `requirements.txt` committed and project runs from a clean clone
 - [x] Code pushed to `main` and the latest `main` builds successfully
 - [ ] Notebooks committed with **cleared outputs** (or use `nbstrip`)
-- [ ] `README` includes a demo screenshot / video link
+- [x] `README` includes a demo screenshot / video link
 - [ ] Short project summary submitted on the hackathon portal
 
 ---
