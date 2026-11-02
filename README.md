@@ -4,7 +4,7 @@
 
 **VTU-QFF-HC-0191** &nbsp;|&nbsp; Tier: **Online**
 
-### 🎮 [Play Andromeda Station: The Last Qubit on itch.io](https://sohampawar.itch.io/the-lost-qubit)
+### 🎮 [Play Andromeda Station: The Lost Qubit on itch.io](https://sohampawar.itch.io/the-lost-qubit)
 #### 🎬 [Video Link](https://youtu.be/0ai7rEpT8Fg) &nbsp;|&nbsp; 📽️ [PPT Link](https://drive.google.com/drive/folders/1HhCSCOcXZPTdQXdaeEj4gAzlgiaEjIBj?usp=sharing)
 <div align="center">
   <a href="https://youtu.be/0ai7rEpT8Fg">
